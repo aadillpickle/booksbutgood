@@ -5,7 +5,7 @@ function App() {
       <div id="columns" className="flex overflow-hidden h-screen">
         <div id="leftTease" className="w-30 h-full sansserif p-4 text-sm text-center flex flex-col opacity-50 hover:opacity-100 transition-opacity">
           <div id="tease" className="mt-auto text-gray-700"> 
-            <img className="h-24 mx-auto mb-4" src="https://m.media-amazon.com/images/I/51ok0jWkjaL._AC_SY780_.jpg"/>
+            <img alt="" className="h-24 mx-auto mb-4" src="https://m.media-amazon.com/images/I/51ok0jWkjaL._AC_SY780_.jpg"/>
             <div id="title" className="font-semibold leading-4 text-gray-600">Hackers and Painters</div>
             <div id="author" className="text-gray-500" style={{fontSize: "0.75rem"}}>Paul Graham</div>
           </div>
