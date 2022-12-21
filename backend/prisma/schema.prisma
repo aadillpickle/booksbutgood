@@ -9,9 +9,29 @@ model User {
   id        Int      @id @default(autoincrement())
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  name      String?   
-  email		String 	 @unique
-  password	String
+  name      String?
+  email     String   @unique
+  password  String
+}
+
+model Book {
+  id        Int       @id @default(autoincrement())
+  createdAt DateTime  @default(now())
+  title     String
+  author    String?
+  chapters   Chapter[]
+  cover		String?
+  imagesDirectory String?
+}
+
+model Chapter {
+  id      Int    @id @default(autoincrement())
+  book    Book   @relation(fields: [bookId], references: [id])
+  bookId  Int
+  title   String
+  content String
+  order	  Int 
+
 }
 
 datasource db {

@@ -3,7 +3,7 @@ const prisma = new PrismaClient()
 
 // const user = await prisma.user.findUnique({
 // 	where: {
-// 		"riley@walzr.com"
+// 		email: "riley@walzr.com"
 // 	}
 // })
 
