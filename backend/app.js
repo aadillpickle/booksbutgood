@@ -23,22 +23,23 @@ app.get('/', (req, res) => {
 })
 
 app.get('/operand', (req, res) => {
-  (async () => {
-    const operand = operandClient(
-      ObjectService,
-      "igblu081041y2h9lv6s8s3fa05yem41p2sko",
-      process.env["OPERAND_API_KEY"],
-      {
-        [indexIDHeaderKey]: "e1v5mc48o0bi",
-      }
-    );
-    const response = await operand.searchWithin({
-      query: "why is peter thiel so rich",
-    });
-    res.send(response)
-    // console.log(response);
-    // console.log(response.matches.map((m) => `${m.content} (${m.score})`));
-  })();
+  res.send('Hello Operand')
+  // (async () => {
+  //   const operand = operandClient(
+  //     ObjectService,
+  //     "igblu081041y2h9lv6s8s3fa05yem41p2sko",
+  //     process.env["OPERAND_API_KEY"],
+  //     {
+  //       [indexIDHeaderKey]: "e1v5mc48o0bi",
+  //     }
+  //   );
+  //   const response = await operand.searchWithin({
+  //     query: "why is peter thiel so rich",
+  //   });
+  //   res.send(response)
+  //   // console.log(response);
+  //   // console.log(response.matches.map((m) => `${m.content} (${m.score})`));
+  // })();
 
 
 })
