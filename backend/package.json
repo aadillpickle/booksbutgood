@@ -11,10 +11,11 @@
   "author": "",
   "license": "ISC",
   "devDependencies": {
-    "prisma": "^4.7.1"
+    "prisma": "^4.8.0"
   },
   "dependencies": {
-    "@prisma/client": "^4.7.1",
+    "@operandinc/sdk": "^4.1.15",
+    "@prisma/client": "^4.8.0",
     "aws-sdk": "^2.1279.0",
     "epub2": "^3.0.1",
     "express": "^4.18.2",
