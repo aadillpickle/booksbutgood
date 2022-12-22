@@ -21,7 +21,7 @@ function App() {
   }
 
   useEffect(()=>{
-    fetch('http://localhost:3001/book/9')
+    fetch(process.env.REACT_APP_API_ROOT + '/book/9')
       .then((response) => response.json())
       .then((data) => setBook(data));
   }, [])
