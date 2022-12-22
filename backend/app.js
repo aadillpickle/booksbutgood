@@ -1,49 +1,70 @@
-const {PrismaClient} = require('@prisma/client');
-const prisma = new PrismaClient()
-const {
-  operandClient,
-  indexIDHeaderKey,
-  ObjectService,
-  Object,
-} = require("@operandinc/sdk");
+const { PrismaClient } = require("@prisma/client");
+const prisma = new PrismaClient();
 
+const express = require("express");
+const app = express();
+const port = 3000;
 
-// const user = await prisma.user.findUnique({
-// 	where: {
-// 		email: "riley@walzr.com"
-// 	}
-// })
+const cors = require("cors");
+app.use(
+  cors({
+    origin: ["http://localhost:3000", "https://booksbutgood.up.railway.app"],
+  })
+);
 
-const express = require('express')
-const app = express()
-const port = 3000
+app.get("/", (req, res) => {
+  res.send("Hello World!");
+});
 
-app.get('/', (req, res) => {
-  res.send('Hello World!')
-})
+app.get("/operand", (req, res) => {
+  res.send("Hello Operand");
+});
 
-app.get('/operand', (req, res) => {
-  res.send('Hello Operand')
-  // (async () => {
-  //   const operand = operandClient(
-  //     ObjectService,
-  //     "igblu081041y2h9lv6s8s3fa05yem41p2sko",
-  //     process.env["OPERAND_API_KEY"],
-  //     {
-  //       [indexIDHeaderKey]: "e1v5mc48o0bi",
-  //     }
-  //   );
-  //   const response = await operand.searchWithin({
-  //     query: "why is peter thiel so rich",
-  //   });
-  //   res.send(response)
-  //   // console.log(response);
-  //   // console.log(response.matches.map((m) => `${m.content} (${m.score})`));
-  // })();
+app.get("/book/:id", async (req, res) => {
+  if (!req.params.id || !Number(req.params.id)){
+    return res.status(400).send("invalid id");
+  }
 
+  const book = await prisma.book.findUnique({
+    where: {
+      id: Number(req.params.id),
+    },
+  });
 
-})
+  if (!book) return res.status(404).send("404 not found");
 
-app.listen(process.env.PORT || 3000, () => {
-  console.log(`Example app listening on port ${process.env.PORT || 3000}`)
-})
+  book.chapters = await prisma.chapter.findMany({
+    where: {
+      bookId: book.id,
+    },
+    select: {
+      id: true,
+      title: true,
+      order: true,
+    },
+  });
+
+  book.chapters.sort(function (a, b) {
+    return a.order - b.order;
+  });
+
+  return res.status(200).json(book);
+});
+
+app.get("/chapter/:id", async (req, res) => {
+  if (!req.params.id || !Number(req.params.id)) {
+    return res.status(400).send("invalid id");
+  }
+  const chapter = await prisma.chapter.findUnique({
+    where: {
+      id: Number(req.params.id),
+    },
+  });
+
+  if (chapter) return res.status(200).json(chapter);
+  else return res.status(404).send("404 not found");
+});
+
+app.listen(process.env.PORT || 3001, () => {
+  console.log(`Example app listening on port ${process.env.PORT || 3001}`);
+});
