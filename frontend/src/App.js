@@ -6,7 +6,6 @@ function App() {
   const inputRef = useRef(null)
   const messageListReferance = useRef(null)
   const [messages, setMessages] = useState([])
-  const [book, setBook] = useState(null)
 
   const handleClick = (input) => {
     const userChatObj = {
@@ -20,36 +19,79 @@ function App() {
     inputRef.current.value = ''
   }
 
+  const [bookId, setBookId] = useState(9)
+  const [book, setBook] = useState(null)
+  const [chapterId, setChapterId] = useState(null)
+  const [chapter, setChapter] = useState(null)
+
   useEffect(()=>{
-    fetch(process.env.REACT_APP_API_ROOT + '/book/9')
+    if (!bookId) return
+    fetch(process.env.REACT_APP_API_ROOT + '/book/' + bookId)
       .then((response) => response.json())
-      .then((data) => setBook(data));
-  }, [])
+      .then((data) => {
+        setBook(data);
+        if (!chapterId) setChapterId(data.chapters[0].id)
+
+      })
+  }, [bookId])
+
+  useEffect(()=>{
+    if (!chapterId) return
+    fetch(process.env.REACT_APP_API_ROOT + '/chapter/' + chapterId)
+      .then((response) => response.json())
+      .then((data) => setChapter(data));
+  }, [chapterId])
+
+
+  const [mouseOverTeaser, setMouseOverTeaser] = useState(false);
+  const [mouseOverTOC, setMouseOverTOC] = useState(false);
+  const displayingTOC = useRef(false);
+  const toc = useRef(null);
+
+
+  useEffect(()=>{
+    console.log(mouseOverTOC, mouseOverTeaser, displayingTOC.current)
+    if ((mouseOverTOC || mouseOverTeaser) && !displayingTOC.current){
+      displayingTOC.current = true
+      toc.current.style.visibility = ""
+      toc.current.style.opacity = "1"
+      toc.current.style.transform = "translateX(0%)"
+    } else if (!mouseOverTeaser && !mouseOverTOC && displayingTOC.current){
+      displayingTOC.current = false
+      toc.current.style.visibility = "hidden"
+      toc.current.style.transform = "translateX(-10%)"
+      toc.current.style.opacity = "0"
+    }
+  }, [mouseOverTOC, mouseOverTeaser])
+
 
   return (
     <div id="app">
-      <div id="toc" className="h-screen w-80 p-1 sansserif bg-fuchsia-100 absolute z-10 overflow-scroll">
+      <div id="toc" ref={toc} style={{visibility: "hidden", transform: "translateX(-100%)", opacity: 0}} className="transition-all h-screen w-80 p-2 sansserif bg-stone-100/90 absolute z-10 overflow-scroll" 
+      onMouseEnter={() => setMouseOverTOC(true)}
+        onMouseLeave={() => setMouseOverTOC(false)}>
         <div className="leading-4 text-sm p-4">
         <div className="font-semibold">{book?.title}</div>
         <div className="">{book?.author}</div>
         </div>
 
-        <div className="flex flex-col mt-8">
+        <div className="flex flex-col mt-5">
           {book?.chapters ? book.chapters.map((chapter)=>{
-            return <div key={chapter.order} className="hover:bg-fuchsia-200 rounded py-2 px-3 transition-colors">{chapter.title}</div>
+            return <div key={chapter.order} className="hover:bg-stone-200 rounded py-2 cursor-pointer px-3 transition-colors" onClick={()=>setChapterId(chapter.id)}>{chapter.title}</div>
           }) : <div className="animate-pulse">
-            <div className="hover:bg-fuchsia-200 rounded py-2 px-3 transition-colors">
-              <div className="h-2 bg-fuchsia-300  rounded col-span-2"></div>
+            <div className="hover:bg-stone-200 rounded py-2 px-3 transition-colors">
+              <div className="h-2 bg-stone-300  rounded col-span-2"></div>
             </div>
-            <div className="hover:bg-fuchsia-200 rounded py-2 px-3 transition-colors">
-              <div className="h-2 bg-fuchsia-300  rounded w-4/6"></div>
+            <div className="hover:bg-stone-200 rounded py-2 px-3 transition-colors">
+              <div className="h-2 bg-stone-300  rounded w-4/6"></div>
             </div>
           </div>}
           
         </div>
       </div>
       <div id="columns" className="flex overflow-hidden h-screen">
-        <div id="leftTease" className="w-30 h-full sansserif p-4 text-sm text-center flex flex-col opacity-50 hover:opacity-100 transition-opacity">
+        <div id="leftTease" className="w-30 h-full sansserif p-4 text-sm text-center flex flex-col opacity-50 hover:opacity-100 transition-opacity" onMouseEnter={() => setMouseOverTeaser(true)}
+        onMouseLeave={() => setMouseOverTeaser(false)}>
           <div id="tease" className={"mt-auto text-gray-700 " + (!book ? "animate-pulse" : "")}>
             {book?.cover ? <img alt="" className="h-24 mx-auto mb-4" src={book?.cover}/> : <div className="h-24 w-16 mx-auto mb-4 bg-gray-600"/>}
             
@@ -58,9 +100,7 @@ function App() {
           </div>
         </div>
         <div id="contentContainer" className="flex-1 overflow-auto">
-          <article id="content" className="px-2 py-16 max-w-2xl mx-auto prose prose lg:prose-xl">
-            <h1>Book</h1>
-          </article>
+          <article id="content" dangerouslySetInnerHTML={{ __html: chapter?.content }} className="px-12 py-16 max-w-2xl mx-auto prose prose lg:prose-xl"/>
         </div>
         <div id="right" className="flex flex-col w-96 ml-auto bg-blue-100 h-full">
           <div className="h-1/6" id="progress">
