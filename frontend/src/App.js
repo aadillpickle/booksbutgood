@@ -77,7 +77,7 @@ function App() {
 
         <div className="flex flex-col mt-5">
           {book?.chapters ? book.chapters.map((chapter)=>{
-            return <div key={chapter.order} className="hover:bg-stone-200 rounded py-2 cursor-pointer px-3 transition-colors" onClick={()=>setChapterId(chapter.id)}>{chapter.title}</div>
+            return <div key={chapter.order} className="hover:bg-stone-200 text-sm rounded py-1 cursor-pointer px-3 transition-colors" onClick={()=>setChapterId(chapter.id)}>{chapter.title}</div>
           }) : <div className="animate-pulse">
             <div className="hover:bg-stone-200 rounded py-2 px-3 transition-colors">
               <div className="h-2 bg-stone-300  rounded col-span-2"></div>
