@@ -2,6 +2,15 @@ import 'react-chat-elements/dist/main.css'
 import { MessageBox, MessageList, Input, Button } from 'react-chat-elements'
 import React, { useRef, useState, useEffect } from 'react';
 
+const searchWithin = async (input) => {
+  const options = {method: 'GET'};
+
+  const result = await fetch('http://localhost:3001/operand', options)
+  const response = await result.json()
+  console.log(response)
+  return response;
+}
+
 function App() {
   const inputRef = useRef(null)
   const messageListReferance = useRef(null)
@@ -14,8 +23,14 @@ function App() {
       text: input,
       date: new Date(),
     }
-    setMessages([...messages, userChatObj])
-    console.log(messages)
+    const botChatObj = {
+      position: 'left',
+      type: 'text',
+      text: searchWithin(input),
+      date: new Date(),
+    }
+    console.log('wazup')
+    setMessages([...messages, userChatObj, botChatObj])
     inputRef.current.value = ''
   }
 
@@ -50,7 +65,6 @@ function App() {
 
 
   useEffect(()=>{
-    console.log(mouseOverTOC, mouseOverTeaser, displayingTOC.current)
     if ((mouseOverTOC || mouseOverTeaser) && !displayingTOC.current){
       displayingTOC.current = true
       toc.current.style.visibility = ""
@@ -67,7 +81,7 @@ function App() {
 
   return (
     <div id="app">
-      <div id="toc" ref={toc} style={{visibility: "hidden", transform: "translateX(-100%)", opacity: 0}} className="transition-all h-screen w-80 p-2 sansserif bg-stone-100/90 absolute z-10 overflow-scroll" 
+      <div id="toc" ref={toc} style={{visibility: "hidden", transform: "translateX(-100%)", opacity: 0}} className="transition-all h-screen w-80 p-2 sansserif bg-stone-100/90 absolute z-10 overflow-scroll"
       onMouseEnter={() => setMouseOverTOC(true)}
         onMouseLeave={() => setMouseOverTOC(false)}>
         <div className="leading-4 text-sm p-4">
@@ -86,7 +100,7 @@ function App() {
               <div className="h-2 bg-stone-300  rounded w-4/6"></div>
             </div>
           </div>}
-          
+
         </div>
       </div>
       <div id="columns" className="flex overflow-hidden h-screen">
@@ -94,7 +108,7 @@ function App() {
         onMouseLeave={() => setMouseOverTeaser(false)}>
           <div id="tease" className={"mt-auto text-gray-700 " + (!book ? "animate-pulse" : "")}>
             {book?.cover ? <img alt="" className="h-24 mx-auto mb-4" src={book?.cover}/> : <div className="h-24 w-16 mx-auto mb-4 bg-gray-600"/>}
-            
+
             <div id="title" className="font-semibold leading-4 text-gray-600">{book?.title || <div className="h-2 bg-gray-600  rounded w-3/6"/>}</div>
             <div id="author" className="text-gray-500" style={{fontSize: "0.75rem"}}>{book?.author}</div>
           </div>
