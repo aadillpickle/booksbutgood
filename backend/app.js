@@ -2,8 +2,12 @@ const { PrismaClient } = require("@prisma/client");
 const prisma = new PrismaClient();
 
 const express = require("express");
+const bodyParser = require('body-parser')
+
 const app = express();
 const port = 3000;
+
+const jsonParser = bodyParser.json()
 
 const cors = require("cors");
 // const { SearchWithinRequest, SearchWithinResponse, AnswerRequest, AnswerResponse } = require("@operandinc/sdk");
@@ -17,8 +21,9 @@ app.get("/", (req, res) => {
   res.send("Hello World!");
 });
 
-app.get("/operand", async (req, res) => {
-  async function searchWithin() {
+app.post("/operand/search", jsonParser, async (req, res) => {
+  async function searchWithin(question) {
+
     const options = {
       method: 'POST',
       headers: {
@@ -26,17 +31,26 @@ app.get("/operand", async (req, res) => {
         'Operand-Index-ID': '2g2i2p14ddly',
         'Content-Type': 'application/json'
       },
-      body: '{"query":"what does peter thiel think of capitalism","limit":2}'
+      body: `{
+        "query":"${question}",
+        "attemptAnswer":true,
+        "limit":2
+      }`
     };
 
-    const resp = await fetch('https://api.operand.ai/operand.v1.ObjectService/SearchWithin', options);
+    const resp = await fetch('https://api.operand.ai/operand.v1.OperandService/Search', options);
     const body = await resp.json();
 
+    try {
+      return [body.results.map((m) => m.content), body.answer.answer];
+    } catch (e) {
+      return [body.results.map((m) => m.content), ''];
+    }
 
-    // console.log(body.matches.map((m) => m.content));
-    return body.matches.map((m) => m.content)
   }
-  let result = await searchWithin()
+  const question = req.body.question;
+  console.log(question)
+  let result = await searchWithin(question);
   res.send(result);
 });
 

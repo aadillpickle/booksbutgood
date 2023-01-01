@@ -1,14 +1,32 @@
 import 'react-chat-elements/dist/main.css'
-import { MessageBox, MessageList, Input, Button } from 'react-chat-elements'
+import { MessageList, Input, Button } from 'react-chat-elements'
 import React, { useRef, useState, useEffect } from 'react';
 
 const searchWithin = async (input) => {
-  const options = {method: 'GET'};
+  const options = {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: `{"question":"${input}"}`
+  };
 
-  const result = await fetch('http://localhost:3001/operand', options)
+  const result = await fetch('http://localhost:3001/operand/search', options)
   const response = await result.json()
-  console.log(response)
   return response;
+}
+
+const searchInBook = async (indexedContent) => {
+  const chapterIds = [54, 55, 60, 61, 62, 63, 70, 65, 64, 66, 58, 67, 68, 71, 69, 57]
+  const options = {method: 'GET'};
+  const chapters = [];
+  chapterIds.map(async (id) => {
+    const chapterContent = await fetch('http://localhost:3001/chapter/' + id, options)
+    const response = await chapterContent.json()
+    const chapter = response.content
+    if (chapter.includes(indexedContent[0].substring(0, 20)) || chapter.includes(indexedContent[1].substring(0, 20))) {
+      chapters.push(id)
+    }
+  })
+  return chapters;
 }
 
 function App() {
@@ -16,7 +34,24 @@ function App() {
   const messageListReferance = useRef(null)
   const [messages, setMessages] = useState([])
 
-  const handleClick = (input) => {
+  const [bookId, setBookId] = useState(9)
+  const [book, setBook] = useState(null)
+  const [chapterId, setChapterId] = useState(null)
+  const [chapter, setChapter] = useState(null)
+
+  const handleClick = async (input) => {
+    const response = await searchWithin(input);
+    const chapterNums = await searchInBook(response[0]);
+    console.log(chapterNums.length)
+    console.log(chapterNums)
+    let botText = '';
+    if (response[1] !== '') {
+      botText = <p>{response[1]} You can read more in chapter <button onClick={setChapterId(chapterNums[0])}>{chapterNums[0]}</button></p>
+    }
+    else {
+      botText = <p>You can read more in chapter <button onClick={setChapterId(chapterNums[0])}>{chapterNums[0]}</button></p>
+    }
+    console.log(botText)
     const userChatObj = {
       position: 'right',
       type: 'text',
@@ -26,18 +61,13 @@ function App() {
     const botChatObj = {
       position: 'left',
       type: 'text',
-      text: searchWithin(input),
+      text: botText,
       date: new Date(),
     }
     console.log('wazup')
     setMessages([...messages, userChatObj, botChatObj])
     inputRef.current.value = ''
   }
-
-  const [bookId, setBookId] = useState(9)
-  const [book, setBook] = useState(null)
-  const [chapterId, setChapterId] = useState(null)
-  const [chapter, setChapter] = useState(null)
 
   useEffect(()=>{
     if (!bookId) return
