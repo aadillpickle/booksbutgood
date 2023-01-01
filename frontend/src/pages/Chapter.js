@@ -28,7 +28,6 @@ const searchWithin = async (input) => {
 
   const result = await fetch(process.env.REACT_APP_API_ROOT + '/operand/search', options)
   const response = await result.json()
-  console.log(response)
   return response;
 }
 

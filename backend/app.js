@@ -27,7 +27,7 @@ app.post("/operand/search", jsonParser, async (req, res) => {
     const options = {
       method: 'POST',
       headers: {
-        Authorization: 'igblu081041y2h9lv6s8s3fa05yem41p2sko',
+        Authorization: process.env.OPERAND_API_KEY,
         'Operand-Index-ID': '2g2i2p14ddly',
         'Content-Type': 'application/json'
       },
@@ -49,7 +49,6 @@ app.post("/operand/search", jsonParser, async (req, res) => {
 
   }
   const question = req.body.question;
-  console.log(question)
   let result = await searchWithin(question);
   res.send(result);
 });
