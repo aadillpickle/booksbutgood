@@ -34,6 +34,7 @@ const searchWithin = async (input) => {
 function Chapter() {
   const { id } = useParams();
   const inputRef = useRef(null)
+  const searchRef = useRef(null)
   const messageListReferance = useRef(null)
   const [messages, setMessages] = useState([])
 
@@ -104,6 +105,14 @@ function Chapter() {
       toc.current.style.visibility = ""
       toc.current.style.opacity = "1"
       toc.current.style.transform = "translateX(0%)"
+      setTimeout(()=>{
+        // for some bullshit reason this only works if i do it a few ms later
+        searchRef.current.focus()
+        const end = searchRef.current.value.length;
+        searchRef.current.setSelectionRange(end, end);
+        searchRef.current.focus();    
+      }, 100)
+      
     } else if (!mouseOverTeaser && !mouseOverTOC && displayingTOC.current){
       displayingTOC.current = false
       toc.current.style.visibility = "hidden"
@@ -121,9 +130,17 @@ function Chapter() {
         <div className="leading-4 text-sm p-4">
         <div className="font-semibold">{book?.title}</div>
         <div className="">{book?.author}</div>
+        <form className="mt-4">   
+          <div className="relative">
+              <div className="absolute inset-y-0 left-0 flex items-center pl-2 pointer-events-none">
+                  <svg ariaHidden="true" className="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+              </div>
+              <input type="search" ref={searchRef} className="sans-serif block w-full p-2 pl-7 text-sm text-gray-900 border border-gray-300 rounded-lg bg-gray-50 outline-0" spellCheck="false" placeholder="Search for anything" required/>
+          </div>
+      </form>
         </div>
 
-        <div className="flex flex-col mt-5">
+        <div className="flex flex-col mt-2">
           {book?.chapters ? book.chapters.map((chapter)=>{
 
             return <Link key={chapter.order} to={`/chapter/${chapter.id}`}>
