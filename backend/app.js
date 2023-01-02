@@ -13,7 +13,7 @@ const cors = require("cors");
 // const { SearchWithinRequest, SearchWithinResponse, AnswerRequest, AnswerResponse } = require("@operandinc/sdk");
 app.use(
   cors({
-    origin: ["http://localhost:3000", "https://booksbutgood.up.railway.app"],
+    origin: ["http://localhost:3000", "https://booksbutgood.up.railway.app", "https://booksbutgood.com"],
   })
 );
 
