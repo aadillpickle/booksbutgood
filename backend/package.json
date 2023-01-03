@@ -3,9 +3,6 @@
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
-  "engines" : {
-    "node" : ">=18.12.1"
-  },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "dbsync": "npx prisma migrate dev --name init",
@@ -27,6 +24,7 @@
     "cors": "^2.8.5",
     "epub2": "^3.0.1",
     "express": "^4.18.2",
+    "node-html-parser": "^6.1.4",
     "uniqid": "^5.4.0"
   }
 }

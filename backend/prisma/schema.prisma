@@ -29,9 +29,19 @@ model Chapter {
   book    Book   @relation(fields: [bookId], references: [id])
   bookId  Int
   title   String
-  content String
+  sections Section[] 
   order	  Int 
 
+}
+
+model Section {
+  id      Int    @id @default(autoincrement())
+  chapter    Chapter   @relation(fields: [chapterId], references: [id])
+  chapterId Int
+  content String
+  question String?
+  answer String?
+  order Int
 }
 
 datasource db {
