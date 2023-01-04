@@ -5,7 +5,7 @@ import { useParams, useNavigate, redirect, Link } from "react-router-dom";
 
 const searchInBook = async (indexedContent) => {
   const chapterIds = [
-    54, 55, 60, 61, 62, 63, 70, 65, 64, 66, 58, 67, 68, 71, 69, 57,
+    1, 6, 5, 3, 7, 4, 10, 8, 2, 17, 11, 12, 13, 14, 15, 9
   ];
   const options = { method: "GET" };
   const chapters = [];
@@ -16,13 +16,16 @@ const searchInBook = async (indexedContent) => {
         options
       );
       const response = await chapterContent.json();
-      const chapter = response.content;
-      if (
-        chapter.includes(indexedContent[0].substring(0, 20)) ||
-        chapter.includes(indexedContent[1].substring(0, 20))
-      ) {
-        chapters.push({ id: id, title: response.title });
-      }
+      const chapter = response.sections.map((section) => {
+        var sectionContent = section.content
+        if (
+          sectionContent.includes(indexedContent[0].substring(0, 20)) ||
+          sectionContent.includes(indexedContent[1].substring(0, 20))
+        ) {
+          chapters.push({ id: id, title: response.title });
+        }
+      })
+
     })
   );
   return chapters;
