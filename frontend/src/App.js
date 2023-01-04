@@ -1,6 +1,9 @@
 import 'react-chat-elements/dist/main.css'
 import Chapter from "./pages/Chapter.js";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import ReactGA from 'react-ga';
+ReactGA.initialize('G-BFGZ10KN5');
+ReactGA.pageview(window.location.pathname + window.location.search);
 
 const App = () => {
   return (
