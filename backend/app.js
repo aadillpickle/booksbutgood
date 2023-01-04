@@ -1,6 +1,8 @@
 const { PrismaClient } = require("@prisma/client");
 const prisma = new PrismaClient();
 
+const fetch = require("node-fetch");
+
 const express = require("express");
 const bodyParser = require("body-parser");
 
@@ -23,6 +25,54 @@ app.use(
 
 app.get("/", (req, res) => {
   res.send("Hello World!");
+});
+
+app.get("/search", async (req, res) => {
+  // let match = await prisma.section.findMany({
+  //     where: {
+  //       content: {
+  //         search: req.query.query,
+  //       },
+  //     },
+  //   });
+
+  // res.json(match)
+
+  const options = {
+    method: "POST",
+    headers: {
+      Authorization: process.env.OPERAND_API_KEY,
+      "Operand-Index-ID": "2g2i2p14ddly",
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      query: req.query.query,
+      attemptAnswer: false,
+      limit: 15,
+    }),
+  };
+
+  const resp = await fetch(
+    "https://api.operand.ai/operand.v1.OperandService/Search",
+    options
+  );
+  const body = await resp.json();
+
+  // body.results.forEach(async (result) => {
+  //   let firstBit = result.content.substr(0, 100).split(" ");
+  //   firstBit.pop();
+  //   firstBit = firstBit.join(" ");
+  //   console.log(firstBit);
+  //   let match = await prisma.section.findFirst({
+  //     where: {
+  //       content: {
+  //         search: firstBit,
+  //       },
+  //     },
+  //   });
+  //   console.log("match", match.id);
+  // });
+  res.json(body.results);
 });
 
 app.post("/operand/search", jsonParser, async (req, res) => {
