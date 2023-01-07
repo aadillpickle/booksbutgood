@@ -1,5 +1,7 @@
 const { PrismaClient } = require("@prisma/client");
 const prisma = new PrismaClient();
+let showdown = require("showdown");
+let markdownConverter = new showdown.Converter();
 
 const fetch = require("node-fetch");
 
@@ -155,6 +157,10 @@ app.get("/chapter/:id", async (req, res) => {
 
   if (chapter) {
     chapter.sections.sort((a, b) => a.order - b.order);
+    chapter.sections = chapter.sections.map((section) => {
+      section.content = markdownConverter.makeHtml(section.content);
+      return section;
+    });
     return res.status(200).json(chapter);
   } else return res.status(404).send("404 not found");
 });

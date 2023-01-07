@@ -2,6 +2,10 @@ const { PrismaClient } = require("@prisma/client");
 const prisma = new PrismaClient();
 const util = require("util");
 const { parse } = require("node-html-parser");
+const {
+  NodeHtmlMarkdown,
+  NodeHtmlMarkdownOptions,
+} = require("node-html-markdown");
 
 const AWS = require("aws-sdk");
 const spacesEndpoint = new AWS.Endpoint("nyc3.digitaloceanspaces.com");
@@ -97,6 +101,10 @@ epub.on("end", async function () {
     // run any reformatting on the html
     const root = parse(content);
     root.querySelector(".chapter_num1")?.remove();
+    // remove zero to one duplicate images (maybe this has bad effects on other books, we'll see)
+    root.querySelectorAll(".squeeze-epub")?.forEach((img) => {
+      img.remove();
+    });
     content = root.toString();
 
     // get indexes of all titles, to seperate that way we can generate quiz q's
@@ -119,10 +127,12 @@ epub.on("end", async function () {
     );
 
     textCollection.forEach(async (col, i) => {
+      let markdown = NodeHtmlMarkdown.translate(col);
+      if (!markdown) return;
       const dbSection = await prisma.section.create({
         data: {
           order: i,
-          content: col,
+          content: markdown,
           chapter: {
             connect: { id: dbChapter.id },
           },
