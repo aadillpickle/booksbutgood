@@ -2,6 +2,7 @@ import "react-chat-elements/dist/main.css";
 import { MessageList, Input, Button } from "react-chat-elements";
 import React, { useRef, useState, useEffect } from "react";
 import { useParams, useNavigate, redirect, Link } from "react-router-dom";
+import Question from "../components/Question.js";
 
 const searchInBook = async (indexedContent) => {
   //   const chapterIds = [1, 6, 5, 3, 7, 4, 10, 8, 2, 11, 12, 13, 14, 15, 9];
@@ -376,11 +377,19 @@ function Chapter() {
         <div id="contentContainer" className="flex-1 overflow-auto">
           <article
             id="content"
-            dangerouslySetInnerHTML={{
-              __html: chapter?.sections?.map((sect) => sect.content)?.join(""),
-            }}
             className="px-12 py-16 max-w-2xl mx-auto prose prose lg:prose-xl"
-          />
+          >
+            {chapter?.sections?.map((sect) => (
+              <>
+                <div
+                  dangerouslySetInnerHTML={{
+                    __html: sect.content,
+                  }}
+                />
+                <Question question={sect.question} answer={sect.answer} />
+              </>
+            ))}
+          </article>
         </div>
         <div
           id="right"
