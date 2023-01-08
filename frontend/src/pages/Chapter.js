@@ -134,9 +134,9 @@ function Chapter() {
   const [book, setBook] = useState(null);
   const [chapterId, setChapterId] = useState(id);
   const [chapter, setChapter] = useState(null);
-  const flashcardQuestion = "What is the difference between a variable and a constant?"
-  const flashcardAnswer = "A variable is a value that can change, while a constant is a value that cannot change."
-  const flashcardNumber = 1
+  const flashcardQuestions = ["What is the difference between a variable and a constant?", "How?"]
+  const flashcardAnswers = ["A variable is a value that can change, while a constant is a value that cannot change.", "Yeah dat way"]
+  const [flashcardId, setFlashcardId] = useState(1);
   const totalFlashcards = 10
 
   useEffect(() => {
@@ -409,7 +409,7 @@ function Chapter() {
           <div
             className="flex flex-row items-center justify-center h-3/6 m-4 font-sans bg-white rounded"
           >
-            <Flashcard flashcardData={{question: flashcardQuestion, answer: flashcardAnswer, cardNumber: flashcardNumber, totalCards: totalFlashcards}}></Flashcard>
+            <Flashcard flashcardData={{question: flashcardQuestions[flashcardId - 1], answer: flashcardAnswers[flashcardId - 1], cardId: flashcardId, totalCards: totalFlashcards, setIdFxn: setFlashcardId}}></Flashcard>
           </div>
           <div className="flex flex-col h-3/6 justify-between" id="chat">
             <MessageList

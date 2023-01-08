@@ -10,7 +10,7 @@ const Flashcard = (flashcardData) => {
       className="flex flex-col items-center justify-center gap-4"
       onClick={()=>{setIsAnswerVisible(true)}}>
         {/* ideally i wanna do this in tailwind but the tailwind styling isnt applyign to those 2eleemnts so i had to use in line style */}
-        <p className='text-lg border-2 rounded border-slate-500 mb-4 p-2'>Card {data.cardNumber}/{data.totalCards}</p>
+        <p className='text-lg border-2 rounded border-slate-500 mb-4 p-2'>Card {data.cardId}/{data.totalCards}</p>
         <p style={{textAlign: "center"}}>{data.question}</p>
         <button className={buttonClass}>Click to reveal answer</button>
         {isAnswerVisible && <>
@@ -24,7 +24,13 @@ const Flashcard = (flashcardData) => {
           </div>
         </>
         }
-      {rememberClicked && <button className="border-2 rounded border-slate-500 p-2">Next Card</button>} 
+      {rememberClicked && <button onClick={() => {
+        if (data.cardId + 1 > data.totalCards) {
+          data.setIdFxn(1)
+         } else {
+          data.setIdFxn(data.cardId + 1)
+          }
+        }}className="border-2 rounded border-slate-500 p-2">Next Card</button>}
 
     </div>
   );
