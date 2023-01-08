@@ -4,18 +4,19 @@ import React, { useRef, useState, useEffect } from "react";
 import { useParams, useNavigate, redirect, Link } from "react-router-dom";
 
 const searchInBook = async (indexedContent) => {
-  const chapterIds = [1, 6, 5, 3, 7, 4, 10, 8, 2, 11, 12, 13, 14, 15, 9];
+  //   const chapterIds = [1, 6, 5, 3, 7, 4, 10, 8, 2, 11, 12, 13, 14, 15, 9];
+  const chapterIds = Array.from({length: 15}, (_, i) => i + 1)
   const options = { method: "GET" };
   const chapters = [];
   await Promise.all(
     chapterIds.map(async (id) => {
       const chapterContent = await fetch(
-        process.env.REACT_APP_API_ROOT + "/chapter/" + id,
+        process.env.REACT_APP_API_ROOT + "/md-chapter/" + id,
         options
       );
       const response = await chapterContent.json();
       const chapter = response.sections.map((section) => {
-        var sectionContent = section.content;
+        var sectionContent = section.content.replace(/\n\n/g, '\n').replace(/\n/g, ' ');
         if (
           sectionContent.includes(indexedContent[0].substring(0, 20)) ||
           sectionContent.includes(indexedContent[1].substring(0, 20))
@@ -58,7 +59,6 @@ function Chapter() {
   const handleClick = async (input) => {
     const response = await searchWithin(input);
     const chapters = await searchInBook(response[0]);
-
     let botText = "";
     if (response[1] !== "") {
       botText = (
@@ -72,8 +72,8 @@ function Chapter() {
             }}
           >
             Chapter {chapters[0].title}
-          </button>{" "}
-          or{" "}
+          </button>
+          or
           <button
             style={{ color: "blue" }}
             onClick={() => {

@@ -165,6 +165,24 @@ app.get("/chapter/:id", async (req, res) => {
   } else return res.status(404).send("404 not found");
 });
 
+app.get("/md-chapter/:id", async (req, res) => {
+  if (!req.params.id || !Number(req.params.id)) {
+    return res.status(400).send("invalid id");
+  }
+
+  const chapter = await prisma.chapter.findUnique({
+    where: {
+      id: Number(req.params.id),
+    },
+    include: {
+      sections: true,
+    },
+  });
+  if (chapter) {
+    return res.status(200).json(chapter);
+  } else return res.status(404).send("404 not found");
+});
+
 app.listen(process.env.PORT || 3001, () => {
   console.log(`Example app listening on port ${process.env.PORT || 3001}`);
 });
