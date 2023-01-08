@@ -1,6 +1,6 @@
 - operand api
 	- should we switch to typescript for the backend resposne so our api access doesn't get cut off, also seems like there are more routes we can use there
-	- i haven't gotten any chat response with an answer? is that normal or are my queries bad
+	- i haven't gotten many chat responses with an answer? is that normal or are my queries bad
 	- backend api to let people upload a new book, can we use operand api to index something new? (assuming yes)
 - search sidebar: i think we should switch to normal fuzzy search bc that's what people would expect, can leave semantic search to chatbox (also prob doesn't make sense for there to be 2 ways to semantic search anyway)
 - user accounts, passwordless vs password? passwordless is annoying but there's less friction for initial signup

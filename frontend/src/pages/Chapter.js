@@ -386,7 +386,7 @@ function Chapter() {
                     __html: sect.content,
                   }}
                 />
-                <Question />
+                <Question question={sect.question} answer={sect.answer} />
               </>
             ))}
           </article>
