@@ -2,7 +2,7 @@ const { PrismaClient } = require("@prisma/client");
 const prisma = new PrismaClient();
 let showdown = require("showdown");
 let markdownConverter = new showdown.Converter();
-
+const { summarize, genQuestionFromSummary } = require("./gen-questions.js");
 const fetch = require("node-fetch");
 
 const express = require("express");
@@ -14,6 +14,7 @@ const port = 3000;
 const jsonParser = bodyParser.json();
 
 const cors = require("cors");
+
 // const { SearchWithinRequest, SearchWithinResponse, AnswerRequest, AnswerResponse } = require("@operandinc/sdk");
 app.use(
   cors({
@@ -162,6 +163,32 @@ app.get("/chapter/:id", async (req, res) => {
       return section;
     });
     return res.status(200).json(chapter);
+  } else return res.status(404).send("404 not found");
+});
+
+app.post("/questions-for-chapter/:id", async (req, res) => {
+  if (!req.params.id || !Number(req.params.id)) {
+    return res.status(400).send("invalid id");
+  }
+
+  const chapter = await prisma.chapter.findUnique({
+    where: {
+      id: Number(req.params.id),
+    },
+    include: {
+      sections: true,
+    },
+  });
+
+  if (chapter) {
+    chapter.sections.sort((a, b) => a.order - b.order);
+    let summarizedSections = await Promise.all (chapter.sections.map(async (section) => {
+      return await summarize(section.content);
+    }));
+    console.log(summarizedSections)
+    const flashcards = await genQuestionFromSummary(summarizedSections);
+    console.log(flashcards)
+    return res.status(200).send(flashcards);
   } else return res.status(404).send("404 not found");
 });
 
