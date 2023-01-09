@@ -18,7 +18,7 @@ const searchInBook = async (indexedContent) => {
       );
       const response = await chapterContent.json();
       const chapter = response.sections.map((section) => {
-        var sectionContent = section.content.replace(/\n\n/g, '\n').replace(/\n/g, ' ');
+        var sectionContent = section.content.replace(/\n\n/g, ' ')
         if (
           sectionContent.includes(indexedContent[0].substring(0, 20)) ||
           sectionContent.includes(indexedContent[1].substring(0, 20))

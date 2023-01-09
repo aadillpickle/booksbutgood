@@ -5,14 +5,18 @@ const Flashcard = (flashcardData) => {
   const [rememberClicked, setRememberClicked] = useState(false);
   const data = flashcardData.flashcardData
   const buttonClass = "bg-transparent hover:bg-slate-500 text-slate-700 font-semibold hover:text-white py-2 px-4 border border-slate-500 hover:border-transparent rounded"
+
+  const resetStates = () => {
+    setIsAnswerVisible(false)
+    setRememberClicked(false)
+  }
+
   return (
-    <div
-      className="flex flex-col items-center justify-center gap-4"
-      onClick={()=>{setIsAnswerVisible(true)}}>
+    <div className="flex flex-col items-center justify-center gap-4">
         {/* ideally i wanna do this in tailwind but the tailwind styling isnt applyign to those 2eleemnts so i had to use in line style */}
         <p className='text-lg border-2 rounded border-slate-500 mb-4 p-2'>Card {data.cardId}/{data.totalCards}</p>
         <p style={{textAlign: "center"}}>{data.question}</p>
-        <button className={buttonClass}>Click to reveal answer</button>
+        <button onClick={()=>{setIsAnswerVisible(true)}} className={buttonClass}>Click to reveal answer</button>
         {isAnswerVisible && <>
           <p style={{textAlign: "center"}}>{data.answer}</p>
           <div className="flex flex-col justify-self-end mt-4">
@@ -25,6 +29,7 @@ const Flashcard = (flashcardData) => {
         </>
         }
       {rememberClicked && <button onClick={() => {
+        resetStates();
         if (data.cardId + 1 > data.totalCards) {
           data.setIdFxn(1)
          } else {
