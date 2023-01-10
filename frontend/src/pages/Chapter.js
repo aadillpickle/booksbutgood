@@ -1,8 +1,9 @@
 import "react-chat-elements/dist/main.css";
 import { MessageList, Input, Button } from "react-chat-elements";
 import React, { useRef, useState, useEffect } from "react";
-import { useParams, useNavigate, redirect, Link } from "react-router-dom";
+import { useParams, redirect, Link } from "react-router-dom";
 import Question from "../components/Question.js";
+import Flashcard from "../components/Flashcard.js"
 
 const searchInBook = async (indexedContent) => {
   //   const chapterIds = [1, 6, 5, 3, 7, 4, 10, 8, 2, 11, 12, 13, 14, 15, 9];
@@ -17,7 +18,7 @@ const searchInBook = async (indexedContent) => {
       );
       const response = await chapterContent.json();
       const chapter = response.sections.map((section) => {
-        var sectionContent = section.content.replace(/\n\n/g, '\n').replace(/\n/g, ' ');
+        var sectionContent = section.content.replace(/\n\n/g, ' ')
         if (
           sectionContent.includes(indexedContent[0].substring(0, 20)) ||
           sectionContent.includes(indexedContent[1].substring(0, 20))
@@ -133,6 +134,10 @@ function Chapter() {
   const [book, setBook] = useState(null);
   const [chapterId, setChapterId] = useState(id);
   const [chapter, setChapter] = useState(null);
+  const flashcardQuestions = ["What is the difference between a variable and a constant?", "How?"]
+  const flashcardAnswers = ["A variable is a value that can change, while a constant is a value that cannot change.", "Yeah dat way"]
+  const [flashcardId, setFlashcardId] = useState(1);
+  const totalFlashcards = 10
 
   useEffect(() => {
     if (!bookId) return;
@@ -403,9 +408,8 @@ function Chapter() {
           </div> */}
           <div
             className="flex flex-row items-center justify-center h-3/6 m-4 font-sans bg-white rounded"
-            id="coming-soon"
           >
-            <p>Quizzes and flashcards coming soon</p>
+            <Flashcard flashcardData={{question: flashcardQuestions[flashcardId - 1], answer: flashcardAnswers[flashcardId - 1], cardId: flashcardId, totalCards: totalFlashcards, setIdFxn: setFlashcardId}}></Flashcard>
           </div>
           <div className="flex flex-col h-3/6 justify-between" id="chat">
             <MessageList
@@ -418,6 +422,7 @@ function Chapter() {
 
             <Input
               className="font-sans rounded mb-2"
+              style={{minWidth: "90%", width: "95%"}} //the node modules class .rce-container-input is setting min width to 100% so i cant do this :(
               referance={inputRef}
               placeholder="Ask a question!"
               multiline={true}
