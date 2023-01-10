@@ -8,7 +8,7 @@ const configuration = new Configuration({
 });
 const openai = new OpenAIApi(configuration);
 
-let chapterId = 1;
+let chapterId = 8;
 
 async function main() {
 	const chapter = await prisma.chapter.findUnique({

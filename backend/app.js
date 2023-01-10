@@ -2,6 +2,8 @@ const { PrismaClient } = require("@prisma/client");
 const prisma = new PrismaClient();
 let showdown = require("showdown");
 let markdownConverter = new showdown.Converter();
+const { fuzzy, search } = require("fast-fuzzy");
+const removeMd = require("remove-markdown");
 
 const fetch = require("node-fetch");
 
@@ -29,52 +31,48 @@ app.get("/", (req, res) => {
   res.send("Hello World!");
 });
 
-app.get("/search", async (req, res) => {
-  // let match = await prisma.section.findMany({
-  //     where: {
-  //       content: {
-  //         search: req.query.query,
-  //       },
-  //     },
-  //   });
+app.post("/search", jsonParser, async (req, res) => {
+  console.log(1);
+  if (!req.body.book) return res.status(404).json({ error: "no book" });
+  if (!req.body.query) return res.json({ error: "no query" });
 
-  // res.json(match)
-
-  const options = {
-    method: "POST",
-    headers: {
-      Authorization: process.env.OPERAND_API_KEY,
-      "Operand-Index-ID": "2g2i2p14ddly",
-      "Content-Type": "application/json",
+  const book = await prisma.book.findUnique({
+    where: {
+      id: Number(req.body.book),
     },
-    body: JSON.stringify({
-      query: req.query.query,
-      attemptAnswer: false,
-      limit: 15,
-    }),
-  };
+  });
 
-  const resp = await fetch(
-    "https://api.operand.ai/operand.v1.OperandService/Search",
-    options
-  );
-  const body = await resp.json();
+  if (!book) return res.status(404).json({ error: "book 404" });
 
-  // body.results.forEach(async (result) => {
-  //   let firstBit = result.content.substr(0, 100).split(" ");
-  //   firstBit.pop();
-  //   firstBit = firstBit.join(" ");
-  //   console.log(firstBit);
-  //   let match = await prisma.section.findFirst({
-  //     where: {
-  //       content: {
-  //         search: firstBit,
-  //       },
-  //     },
-  //   });
-  //   console.log("match", match.id);
-  // });
-  res.json(body.results);
+  book.chapters = await prisma.chapter.findMany({
+    where: {
+      bookId: book.id,
+    },
+    select: {
+      id: true,
+      title: true,
+      order: true,
+      sections: true,
+    },
+  });
+
+  let sections = [];
+  book.chapters.forEach((chapter) => {
+    sections = [...sections, ...chapter.sections];
+  });
+
+  for (let i = 0; i < sections.length; i++) {
+    sections[i].content = removeMd(sections[i].content);
+  }
+  console.log(2);
+
+  let fuzzyResults = search(req.body.query, sections, {
+    keySelector: (obj) => removeMd(obj.content) || "",
+    returnMatchData: true,
+  });
+  console.log(3);
+
+  res.json({ query: req.body.query, sections: sections.length, fuzzyResults });
 });
 
 app.post("/operand/search", jsonParser, async (req, res) => {

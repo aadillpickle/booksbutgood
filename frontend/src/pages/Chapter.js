@@ -6,7 +6,7 @@ import Question from "../components/Question.js";
 
 const searchInBook = async (indexedContent) => {
   //   const chapterIds = [1, 6, 5, 3, 7, 4, 10, 8, 2, 11, 12, 13, 14, 15, 9];
-  const chapterIds = Array.from({length: 15}, (_, i) => i + 1)
+  const chapterIds = Array.from({ length: 15 }, (_, i) => i + 1);
   const options = { method: "GET" };
   const chapters = [];
   await Promise.all(
@@ -17,7 +17,9 @@ const searchInBook = async (indexedContent) => {
       );
       const response = await chapterContent.json();
       const chapter = response.sections.map((section) => {
-        var sectionContent = section.content.replace(/\n\n/g, '\n').replace(/\n/g, ' ');
+        var sectionContent = section.content
+          .replace(/\n\n/g, "\n")
+          .replace(/\n/g, " ");
         if (
           sectionContent.includes(indexedContent[0].substring(0, 20)) ||
           sectionContent.includes(indexedContent[1].substring(0, 20))
@@ -161,10 +163,15 @@ function Chapter() {
   async function search() {
     setSearchLoading(true);
     const chapterContent = await fetch(
-      process.env.REACT_APP_API_ROOT +
-        "/search?query=" +
-        encodeURIComponent(searchQuery),
-      { options: { method: "GET" } }
+      process.env.REACT_APP_API_ROOT + "/search",
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: {
+          query: searchQuery,
+          book: bookId,
+        },
+      }
     );
     const response = await chapterContent.json();
     setSearchResults(response);

@@ -1,9 +1,11 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
 generator client {
   provider        = "prisma-client-js"
   previewFeatures = ["fullTextSearch"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
 }
 
 model User {
@@ -16,36 +18,30 @@ model User {
 }
 
 model Book {
-  id        Int       @id @default(autoincrement())
-  createdAt DateTime  @default(now())
-  title     String
-  author    String?
-  chapters   Chapter[]
-  cover		String?
+  id              Int       @id @default(autoincrement())
+  createdAt       DateTime  @default(now())
+  title           String
+  author          String?
+  cover           String?
   imagesDirectory String?
+  chapters        Chapter[]
 }
 
 model Chapter {
-  id      Int    @id @default(autoincrement())
-  book    Book   @relation(fields: [bookId], references: [id])
-  bookId  Int
-  title   String
-  sections Section[] 
-  order	  Int 
-
+  id       Int       @id @default(autoincrement())
+  bookId   Int
+  title    String
+  order    Int
+  book     Book      @relation(fields: [bookId], references: [id])
+  sections Section[]
 }
 
 model Section {
-  id      Int    @id @default(autoincrement())
-  chapter    Chapter   @relation(fields: [chapterId], references: [id])
+  id        Int     @id @default(autoincrement())
   chapterId Int
-  content String
-  question String?
-  answer String?
-  order Int
-}
-
-datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  content   String
+  question  String?
+  answer    String?
+  order     Int
+  chapter   Chapter @relation(fields: [chapterId], references: [id])
 }
