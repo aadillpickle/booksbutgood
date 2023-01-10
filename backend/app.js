@@ -3,6 +3,8 @@ const prisma = new PrismaClient();
 let showdown = require("showdown");
 let markdownConverter = new showdown.Converter();
 
+const { summarize, genQuestionFromSummary } = require("./gen-questions.js");
+
 const fetch = require("node-fetch");
 
 const express = require("express");
@@ -180,6 +182,29 @@ app.get("/md-chapter/:id", async (req, res) => {
   });
   if (chapter) {
     return res.status(200).json(chapter);
+  } else return res.status(404).send("404 not found");
+});
+
+app.post("/summarize-chapters", async (req, res) => {
+  if (!req.params.id || !Number(req.params.id)) {
+    return res.status(400).send("invalid id");
+  }
+  const chapterIds = [7,1,5,3,8,4,6,9,2,11,13,14,12,16]
+  const chapter = await prisma.chapter.findUnique({
+    where: {
+      id: Number(req.params.id),
+    },
+    include: {
+      sections: true,
+    },
+  });
+
+  if (chapter) {
+    chapter.sections.sort((a, b) => a.order - b.order);
+    let summarizedSections = await Promise.all (chapter.sections.map(async (section) => {
+      return await summarize(section.content);
+    }));
+    return res.status(200).json(summarizedSections);
   } else return res.status(404).send("404 not found");
 });
 
