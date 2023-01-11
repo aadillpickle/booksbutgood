@@ -9,6 +9,7 @@ const configuration = new Configuration({
 const openai = new OpenAIApi(configuration);
 const { getSummaryPrompt, getQandaGenPrompt, getSectionQuestionsPrompt } = require('./prompts.js')
 
+
 let chapterId = 1;
 const flashcardForSectionSummary = async (sectionSummary) => {
 	const response = await openai.createCompletion({

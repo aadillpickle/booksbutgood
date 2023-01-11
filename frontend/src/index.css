@@ -79,3 +79,18 @@ a:not([href]) {
   font-style: italic;
   line-height: 1.2;
 }
+
+.highlight {
+  background-color: #fef08a;
+  padding: 3px;
+  border-radius: 5px;
+  color: #000 !important;
+}
+
+#contentContainer {
+  scroll-behavior: smooth;
+}
+
+.dotdotdot {
+  opacity: 0.3;
+}

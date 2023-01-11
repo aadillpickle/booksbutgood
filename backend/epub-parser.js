@@ -2,6 +2,7 @@ const { PrismaClient } = require("@prisma/client");
 const prisma = new PrismaClient();
 const util = require("util");
 const { parse } = require("node-html-parser");
+const removeMd = require("remove-markdown");
 const {
   NodeHtmlMarkdown,
   NodeHtmlMarkdownOptions,
@@ -126,8 +127,14 @@ epub.on("end", async function () {
       content.substr(allHeadings[allHeadings.length - 1], content.length)
     );
 
+    let textQueue = [];
+
     textCollection.forEach(async (col, i) => {
-      let markdown = NodeHtmlMarkdown.translate(col);
+      textQueue.push(col);
+      if (removeMd(textQueue.join("")).length < 2500) return;
+
+      let markdown = NodeHtmlMarkdown.translate(textQueue.join(""));
+      textQueue = [];
       if (!markdown) return;
       const dbSection = await prisma.section.create({
         data: {
@@ -139,6 +146,10 @@ epub.on("end", async function () {
         },
       });
     });
+
+    if (textQueue.length) {
+      // maybe add this later?
+    }
   });
   console.log("Added " + book.title);
 });

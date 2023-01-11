@@ -6,7 +6,7 @@ import Question from "../components/Question.js";
 
 const searchInBook = async (indexedContent) => {
   //   const chapterIds = [1, 6, 5, 3, 7, 4, 10, 8, 2, 11, 12, 13, 14, 15, 9];
-  const chapterIds = Array.from({length: 15}, (_, i) => i + 1)
+  const chapterIds = Array.from({ length: 15 }, (_, i) => i + 1);
   const options = { method: "GET" };
   const chapters = [];
   await Promise.all(
@@ -17,7 +17,9 @@ const searchInBook = async (indexedContent) => {
       );
       const response = await chapterContent.json();
       const chapter = response.sections.map((section) => {
-        var sectionContent = section.content.replace(/\n\n/g, '\n').replace(/\n/g, ' ');
+        var sectionContent = section.content
+          .replace(/\n\n/g, "\n")
+          .replace(/\n/g, " ");
         if (
           sectionContent.includes(indexedContent[0].substring(0, 20)) ||
           sectionContent.includes(indexedContent[1].substring(0, 20))
@@ -146,6 +148,8 @@ function Chapter() {
   }, [bookId]);
 
   useEffect(() => {
+    let secToScroll = sectionScroll.current;
+
     if (!chapterId) return;
     setLoadingChapter(chapterId);
 
@@ -154,6 +158,16 @@ function Chapter() {
       .then((data) => {
         setChapter(data);
         setLoadingChapter(null);
+        setTimeout(() => {
+          if (!secToScroll) return;
+          console.log(document.getElementById("section-" + secToScroll), "soo");
+          let topX = document.getElementById(
+            "section-" + secToScroll
+          ).offsetTop;
+          document.getElementById("contentContainer").scrollTop = topX - 20;
+
+          sectionScroll.current = null;
+        }, 500);
       });
     fetch(process.env.REACT_APP_API_ROOT + "/summary/" + chapterId)
       .then((response) => response.json())
@@ -169,10 +183,15 @@ function Chapter() {
   async function search() {
     setSearchLoading(true);
     const chapterContent = await fetch(
-      process.env.REACT_APP_API_ROOT +
-        "/search?query=" +
-        encodeURIComponent(searchQuery),
-      { options: { method: "GET" } }
+      process.env.REACT_APP_API_ROOT + "/search",
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          query: searchQuery,
+          book: bookId,
+        }),
+      }
     );
     const response = await chapterContent.json();
     setSearchResults(response);
@@ -184,6 +203,7 @@ function Chapter() {
   const [mouseOverTOC, setMouseOverTOC] = useState(false);
   const displayingTOC = useRef(false);
   const toc = useRef(null);
+  const sectionScroll = useRef(null);
 
   useEffect(() => {
     if ((mouseOverTOC || mouseOverTeaser) && !displayingTOC.current) {
@@ -205,6 +225,12 @@ function Chapter() {
       toc.current.style.opacity = "0";
     }
   }, [mouseOverTOC, mouseOverTeaser]);
+
+  function setChapterSection(chapterId, sectionId) {
+    sectionScroll.current = sectionId;
+    console.log(sectionScroll, sectionScroll.current);
+    setChapterId(chapterId);
+  }
 
   return (
     <div id="app">
@@ -262,27 +288,48 @@ function Chapter() {
           </form>
         </div>
 
-        {searchResults && searchResults.length && (
-          <>
-            <p
-              className="text-sm ml-4 cursor-pointer"
-              onClick={() => setSearchResults(null)}
-            >
-              Clear search
-            </p>
+        {searchResults &&
+          searchResults.fuzzyResults &&
+          searchResults.fuzzyResults.length && (
+            <>
+              <p
+                className="text-sm ml-4 cursor-pointer"
+                onClick={() => setSearchResults(null)}
+              >
+                Clear search
+              </p>
 
-            <div className="flex flex-col mt-2">
-              {searchResults.map((result) => {
-                return (
-                  <div className="flex items-center text-sm rounded py-1 cursor-pointer px-3">
-                    {result.content}
-                  </div>
-                );
-              })}
-            </div>
-          </>
-        )}
-        {!searchResults?.length && (
+              <div className="flex flex-col mt-2">
+                {searchResults.fuzzyResults.map((result, i) => {
+                  return (
+                    <Link
+                      to={`/chapter/${result.chapterId}#section-${result.sectionId}`}
+                      key={i}
+                    >
+                      <div
+                        onClick={() =>
+                          setChapterSection(result.chapterId, result.sectionId)
+                        }
+                        className="border-b-2 hover:bg-stone-200 flex flex-col text-sm py-2 cursor-pointer px-3"
+                      >
+                        <div
+                          className="text-gray-700"
+                          dangerouslySetInnerHTML={{
+                            __html: result.text.trim(),
+                          }}
+                        ></div>
+                        <div className="text-gray-500 font-bold text-sm uppercase mt-1">
+                          {result.chapterName}
+                        </div>
+                        <div></div>
+                      </div>
+                    </Link>
+                  );
+                })}
+              </div>
+            </>
+          )}
+        {!searchResults?.fuzzyResults?.length && (
           <div className="flex flex-col mt-2">
             {book?.chapters ? (
               book.chapters.map((chapter) => {
@@ -390,6 +437,7 @@ function Chapter() {
             {chapter?.sections?.map((sect) => (
               <>
                 <div
+                  id={"section-" + sect.id}
                   dangerouslySetInnerHTML={{
                     __html: sect.content,
                   }}

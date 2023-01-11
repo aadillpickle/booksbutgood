@@ -2,6 +2,8 @@ const { PrismaClient } = require("@prisma/client");
 const prisma = new PrismaClient();
 let showdown = require("showdown");
 let markdownConverter = new showdown.Converter();
+const { fuzzy, search, Searcher } = require("fast-fuzzy");
+const removeMd = require("remove-markdown");
 
 const { summarize, genQuestionFromSummary, flashcardForSection } = require("./gen-questions.js");
 
@@ -15,8 +17,44 @@ const port = 3000;
 
 const jsonParser = bodyParser.json();
 
+// make searchable index
+let fuzzyIndex;
+
+makeFuzzyIndex();
+async function makeFuzzyIndex() {
+  let bookChapters = await prisma.chapter.findMany({
+    where: {
+      bookId: 1,
+    },
+    select: {
+      id: true,
+      title: true,
+      order: true,
+      sections: true,
+    },
+  });
+
+  let sections = [];
+  bookChapters.forEach((chapter) => {
+    for (let i = 0; i < chapter.sections.length; i++) {
+      chapter.sections[i].chapterName = chapter.title;
+    }
+    sections = [...sections, ...chapter.sections];
+  });
+
+  for (let i = 0; i < sections.length; i++) {
+    sections[i].content = removeMd(sections[i].content).replace(
+      /\r?\n|\r/g,
+      " "
+    );
+  }
+
+  fuzzyIndex = new Searcher(sections, {
+    keySelector: (s) => s.content,
+  });
+}
+
 const cors = require("cors");
-// const { SearchWithinRequest, SearchWithinResponse, AnswerRequest, AnswerResponse } = require("@operandinc/sdk");
 app.use(
   cors({
     origin: [
@@ -27,56 +65,56 @@ app.use(
   })
 );
 
-app.get("/", (req, res) => {
-  res.send("Hello World!");
+app.get("/", async (req, res) => {
+  res.send("OK then");
 });
 
-app.get("/search", async (req, res) => {
-  // let match = await prisma.section.findMany({
-  //     where: {
-  //       content: {
-  //         search: req.query.query,
-  //       },
-  //     },
-  //   });
+app.post("/search", jsonParser, async (req, res) => {
+  if (!req.body.book) return res.status(404).json({ error: "no book" });
+  if (!req.body.query) return res.json({ error: "no query" });
 
-  // res.json(match)
+  // RILEY: this just works on zero to one for now, change it so it works for any book in db
 
-  const options = {
-    method: "POST",
-    headers: {
-      Authorization: process.env.OPERAND_API_KEY,
-      "Operand-Index-ID": "2g2i2p14ddly",
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      query: req.query.query,
-      attemptAnswer: false,
-      limit: 15,
-    }),
-  };
+  let fuzzyResults = fuzzyIndex.search(req.body.query, {
+    returnMatchData: true,
+  });
 
-  const resp = await fetch(
-    "https://api.operand.ai/operand.v1.OperandService/Search",
-    options
-  );
-  const body = await resp.json();
+  for (let i = 0; i < fuzzyResults.length; i++) {
+    let content = fuzzyResults[i].item.content;
+    let index = fuzzyResults[i].match.index;
+    let length = fuzzyResults[i].match.length;
+    fuzzyResults[i].text =
+      content.slice(0, index) +
+      "<span class='highlight'>" +
+      content.slice(index, index + length + 1) +
+      "</span>" +
+      content.slice(index + length + 1, content.length);
+    fuzzyResults[i].text = fuzzyResults[i].text.substring(
+      fuzzyResults[i].match.index - 60,
+      fuzzyResults[i].match.index + fuzzyResults[i].match.length + 60
+    );
+    fuzzyResults[i].text =
+      "<span class='dotdotdot'>" +
+      "..." +
+      "</span>" +
+      fuzzyResults[i].text.trim() +
+      "<span class='dotdotdot'>" +
+      "..." +
+      "</span>";
+    fuzzyResults[i].sectionId = fuzzyResults[i].item.id;
+    fuzzyResults[i].chapterId = fuzzyResults[i].item.chapterId;
+    fuzzyResults[i].chapterName = fuzzyResults[i].item.chapterName;
+    delete fuzzyResults[i].item;
+    delete fuzzyResults[i].key;
+    delete fuzzyResults[i].match;
+    delete fuzzyResults[i].original;
+    delete fuzzyResults[i].score;
+  }
 
-  // body.results.forEach(async (result) => {
-  //   let firstBit = result.content.substr(0, 100).split(" ");
-  //   firstBit.pop();
-  //   firstBit = firstBit.join(" ");
-  //   console.log(firstBit);
-  //   let match = await prisma.section.findFirst({
-  //     where: {
-  //       content: {
-  //         search: firstBit,
-  //       },
-  //     },
-  //   });
-  //   console.log("match", match.id);
-  // });
-  res.json(body.results);
+  res.json({
+    query: req.body.query,
+    fuzzyResults: fuzzyResults.slice(0, 50),
+  });
 });
 
 app.post("/operand/search", jsonParser, async (req, res) => {
