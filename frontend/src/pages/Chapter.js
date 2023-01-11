@@ -135,6 +135,7 @@ function Chapter() {
   const [book, setBook] = useState(null);
   const [chapterId, setChapterId] = useState(id);
   const [chapter, setChapter] = useState(null);
+  const [summary, setSummary] = useState(null);
 
   useEffect(() => {
     if (!bookId) return;
@@ -151,6 +152,7 @@ function Chapter() {
 
     if (!chapterId) return;
     setLoadingChapter(chapterId);
+
     fetch(process.env.REACT_APP_API_ROOT + "/chapter/" + chapterId)
       .then((response) => response.json())
       .then((data) => {
@@ -166,6 +168,12 @@ function Chapter() {
 
           sectionScroll.current = null;
         }, 500);
+      });
+    fetch(process.env.REACT_APP_API_ROOT + "/summary/" + chapterId)
+      .then((response) => response.json())
+      .then((data) => {
+        let summ = data.join(" ");
+        setSummary(summ);
       });
   }, [chapterId]);
 
@@ -450,10 +458,10 @@ function Chapter() {
           quiz question
           </div> */}
           <div
-            className="flex flex-row items-center justify-center h-3/6 m-4 font-sans bg-white rounded"
-            id="coming-soon"
+            className="flex flex-col items-center h-3/6 m-4 font-sans bg-white rounded overflow-auto p-8"
           >
-            <p>Quizzes and flashcards coming soon</p>
+            <h3><strong>Chapter Summary</strong></h3>
+            <p className="mt-1">{summary}</p>
           </div>
           <div className="flex flex-col h-3/6 justify-between" id="chat">
             <MessageList

@@ -28,12 +28,13 @@ model Book {
 }
 
 model Chapter {
-  id       Int       @id @default(autoincrement())
-  bookId   Int
-  title    String
-  order    Int
-  book     Book      @relation(fields: [bookId], references: [id])
+  id      Int    @id @default(autoincrement())
+  book    Book   @relation(fields: [bookId], references: [id])
+  bookId  Int
+  title   String
   sections Section[]
+  order	  Int
+  summary String[]
 }
 
 model Section {

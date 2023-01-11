@@ -5,6 +5,8 @@ let markdownConverter = new showdown.Converter();
 const { fuzzy, search, Searcher } = require("fast-fuzzy");
 const removeMd = require("remove-markdown");
 
+const { summarize, genQuestionFromSummary, flashcardForSection } = require("./gen-questions.js");
+
 const fetch = require("node-fetch");
 
 const express = require("express");
@@ -219,6 +221,88 @@ app.get("/md-chapter/:id", async (req, res) => {
   if (chapter) {
     return res.status(200).json(chapter);
   } else return res.status(404).send("404 not found");
+});
+
+app.get("/summary/:id", async (req, res) => {
+  if (!req.params.id || !Number(req.params.id)) {
+    return res.status(400).send("invalid id");
+  }
+
+  const chapter = await prisma.chapter.findUnique({
+    where: {
+      id: Number(req.params.id),
+    },
+  });
+    if (chapter) {
+      return res.status(200).json(chapter.summary);
+    } else {
+      return res.status(404).send("404 not found");
+    }
+});
+
+app.post("/summarize-chapters", async (req, res) => {
+  const chapterIds = [7,1,5,3,8,4,6,9,2,11,13,14,12,16]
+  chapterIds.map(async (chapterId) => {
+
+    const chapter = await prisma.chapter.findUnique({
+      where: {
+        id: chapterId,
+      },
+      include: {
+        sections: true,
+      },
+    });
+
+    let summarizedSections = await Promise.all (chapter.sections.map(async (section) => {
+      return await summarize(section.content);
+    }));
+
+    const chapterUpdate = await prisma.chapter.update({
+      where: {
+        id: chapterId,
+      },
+      data: {
+        summary: summarizedSections,
+      },
+    });
+    console.log(chapterUpdate)
+  })
+  return res.status(200);
+});
+
+app.post("/questions-for-all-sections", async (req, res) => {
+  const sectionIds = Array.from({length: 55}, (_, i) => i + 1)
+
+  for (let i = 0; i < sectionIds.length; i++) {
+    const sectionId = sectionIds[i]
+    const section = await prisma.section.findUnique({
+      where: {
+        id: sectionId,
+      },
+    });
+    if(!section) continue;
+    const summarizedSection = await summarize(section.content);
+    const flashcard = await flashcardForSection(summarizedSection);
+    const qanda = flashcard.split("Answer: ")
+    // console.log(qanda)
+    let sectionQuestion = qanda[0]
+    //   if (qanda[0]) sectionQuestion = qanda[0].trim()
+    let sectionAnswer = qanda[1]
+    //   if(qanda[1]) sectionQuestion = .trim()
+    // console.log(sectionQuestion, sectionAnswer)
+    const sectionUpdate = await prisma.section.update({
+      where: {
+        id: sectionId,
+      },
+      data: {
+        question: sectionQuestion,
+        answer: sectionAnswer,
+      },
+    });
+    console.log(sectionUpdate)
+  }
+
+  return res.status(200);
 });
 
 app.listen(process.env.PORT || 3001, () => {
