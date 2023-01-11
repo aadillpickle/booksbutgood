@@ -147,6 +147,8 @@ function Chapter() {
   }, [bookId]);
 
   useEffect(() => {
+    let secToScroll = sectionScroll.current;
+
     if (!chapterId) return;
     setLoadingChapter(chapterId);
     fetch(process.env.REACT_APP_API_ROOT + "/chapter/" + chapterId)
@@ -154,6 +156,16 @@ function Chapter() {
       .then((data) => {
         setChapter(data);
         setLoadingChapter(null);
+        setTimeout(() => {
+          if (!secToScroll) return;
+          console.log(document.getElementById("section-" + secToScroll), "soo");
+          let topX = document.getElementById(
+            "section-" + secToScroll
+          ).offsetTop;
+          document.getElementById("contentContainer").scrollTop = topX - 20;
+
+          sectionScroll.current = null;
+        }, 500);
       });
   }, [chapterId]);
 
@@ -167,10 +179,10 @@ function Chapter() {
       {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: {
+        body: JSON.stringify({
           query: searchQuery,
           book: bookId,
-        },
+        }),
       }
     );
     const response = await chapterContent.json();
@@ -183,6 +195,7 @@ function Chapter() {
   const [mouseOverTOC, setMouseOverTOC] = useState(false);
   const displayingTOC = useRef(false);
   const toc = useRef(null);
+  const sectionScroll = useRef(null);
 
   useEffect(() => {
     if ((mouseOverTOC || mouseOverTeaser) && !displayingTOC.current) {
@@ -204,6 +217,12 @@ function Chapter() {
       toc.current.style.opacity = "0";
     }
   }, [mouseOverTOC, mouseOverTeaser]);
+
+  function setChapterSection(chapterId, sectionId) {
+    sectionScroll.current = sectionId;
+    console.log(sectionScroll, sectionScroll.current);
+    setChapterId(chapterId);
+  }
 
   return (
     <div id="app">
@@ -261,27 +280,48 @@ function Chapter() {
           </form>
         </div>
 
-        {searchResults && searchResults.length && (
-          <>
-            <p
-              className="text-sm ml-4 cursor-pointer"
-              onClick={() => setSearchResults(null)}
-            >
-              Clear search
-            </p>
+        {searchResults &&
+          searchResults.fuzzyResults &&
+          searchResults.fuzzyResults.length && (
+            <>
+              <p
+                className="text-sm ml-4 cursor-pointer"
+                onClick={() => setSearchResults(null)}
+              >
+                Clear search
+              </p>
 
-            <div className="flex flex-col mt-2">
-              {searchResults.map((result) => {
-                return (
-                  <div className="flex items-center text-sm rounded py-1 cursor-pointer px-3">
-                    {result.content}
-                  </div>
-                );
-              })}
-            </div>
-          </>
-        )}
-        {!searchResults?.length && (
+              <div className="flex flex-col mt-2">
+                {searchResults.fuzzyResults.map((result, i) => {
+                  return (
+                    <Link
+                      to={`/chapter/${result.chapterId}#section-${result.sectionId}`}
+                      key={i}
+                    >
+                      <div
+                        onClick={() =>
+                          setChapterSection(result.chapterId, result.sectionId)
+                        }
+                        className="border-b-2 hover:bg-stone-200 flex flex-col text-sm py-2 cursor-pointer px-3"
+                      >
+                        <div
+                          className="text-gray-700"
+                          dangerouslySetInnerHTML={{
+                            __html: result.text.trim(),
+                          }}
+                        ></div>
+                        <div className="text-gray-500 font-bold text-sm uppercase mt-1">
+                          {result.chapterName}
+                        </div>
+                        <div></div>
+                      </div>
+                    </Link>
+                  );
+                })}
+              </div>
+            </>
+          )}
+        {!searchResults?.fuzzyResults?.length && (
           <div className="flex flex-col mt-2">
             {book?.chapters ? (
               book.chapters.map((chapter) => {
@@ -389,6 +429,7 @@ function Chapter() {
             {chapter?.sections?.map((sect) => (
               <>
                 <div
+                  id={"section-" + sect.id}
                   dangerouslySetInnerHTML={{
                     __html: sect.content,
                   }}
