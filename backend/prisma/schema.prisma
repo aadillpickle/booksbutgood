@@ -30,9 +30,9 @@ model Chapter {
   book    Book   @relation(fields: [bookId], references: [id])
   bookId  Int
   title   String
-  sections Section[] 
-  order	  Int 
-
+  sections Section[]
+  order	  Int
+  summary String[]
 }
 
 model Section {
