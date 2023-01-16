@@ -4,6 +4,14 @@ import React, { useRef, useState, useEffect } from "react";
 import { useParams, useNavigate, redirect, Link } from "react-router-dom";
 import Question from "../components/Question.js";
 
+import {
+  Accordion,
+  AccordionItem,
+  AccordionItemHeading,
+  AccordionItemButton,
+  AccordionItemPanel,
+} from "react-accessible-accordion";
+
 const searchInBook = async (indexedContent) => {
   //   const chapterIds = [1, 6, 5, 3, 7, 4, 10, 8, 2, 11, 12, 13, 14, 15, 9];
   const chapterIds = Array.from({ length: 15 }, (_, i) => i + 1);
@@ -130,6 +138,12 @@ function Chapter() {
     setMessages([...messages, userChatObj, botChatObj]);
     inputRef.current.value = "";
   };
+
+  const [sidebarAccordion, setSideBarAccordion] = useState({
+    summary: true,
+    flashcards: false,
+    semantic: false,
+  });
 
   const [bookId, setBookId] = useState(1);
   const [book, setBook] = useState(null);
@@ -332,9 +346,9 @@ function Chapter() {
         {!searchResults?.fuzzyResults?.length && (
           <div className="flex flex-col mt-2">
             {book?.chapters ? (
-              book.chapters.map((chapter) => {
+              book.chapters.map((chapter, i) => {
                 return (
-                  <Link key={chapter.order} to={`/chapter/${chapter.id}`}>
+                  <Link key={i} to={`/chapter/${chapter.id}`}>
                     <div
                       className={
                         "flex items-center text-sm rounded py-1 cursor-pointer px-3 transition-colors" +
@@ -449,45 +463,161 @@ function Chapter() {
         </div>
         <div
           id="right"
-          className="flex flex-col w-96 ml-auto bg-blue-100 h-full"
+          className="flex flex-col w-96 ml-auto bg-blue-100 h-full overflow-auto"
         >
+          <div
+            className={
+              "mx-3 mt-5 rounded transition-all" +
+              (sidebarAccordion.summary
+                ? " bg-white drop-shadow mb-5 opacity-100"
+                : " opacity-50")
+            }
+          >
+            <div
+              className="flex items-center  px-6 py-3 cursor-pointer"
+              onClick={() =>
+                setSideBarAccordion((prevState) => {
+                  return { ...prevState, ...{ summary: !prevState.summary } };
+                })
+              }
+            >
+              <div className="select-none font-semibold text-xl sansserif flex-1">
+                Chapter summary
+              </div>
+              <div
+                className={
+                  "border-b-2 border-r-2 h-3 w-3 border-gray-600" +
+                  (sidebarAccordion.summary ? " -rotate-45" : " rotate-45")
+                }
+              ></div>
+            </div>
+
+            {sidebarAccordion.summary && (
+              <div
+                className={
+                  "px-6 border-t-2 py-3 max-h-96 overflow-scroll" +
+                  (sidebarAccordion.summary ? " bg-white" : "")
+                }
+              >
+                {summary}
+              </div>
+            )}
+          </div>
+
+          <div
+            className={
+              "mx-3 mt-5 rounded transition-all" +
+              (sidebarAccordion.flashcards
+                ? " bg-white drop-shadow mb-5 opacity-100"
+                : " opacity-50")
+            }
+          >
+            <div
+              className="flex items-center  px-6 py-3 cursor-pointer"
+              onClick={() =>
+                setSideBarAccordion((prevState) => {
+                  return {
+                    ...prevState,
+                    ...{ flashcards: !prevState.flashcards },
+                  };
+                })
+              }
+            >
+              <div className="select-none font-semibold text-xl sansserif flex-1">
+                Flashcards
+              </div>
+              <div
+                className={
+                  "border-b-2 border-r-2 h-3 w-3 border-gray-600" +
+                  (sidebarAccordion.flashcards ? " -rotate-45" : " rotate-45")
+                }
+              ></div>
+            </div>
+
+            {sidebarAccordion.flashcards && (
+              <div
+                className={
+                  "px-6 border-t-2 py-3 max-h-96 overflow-scroll" +
+                  (sidebarAccordion.flashcards ? " bg-white" : "")
+                }
+              >
+                <Question flashcard={true} />
+              </div>
+            )}
+          </div>
+
           {/* <div className="h-1/6" id="progress">
           quiz progress
           </div>
           <div className="h-2/6" id="question">
           quiz question
           </div> */}
-          <div
-            className="flex flex-col items-center h-3/6 m-4 font-sans bg-white rounded overflow-auto p-8"
-          >
-            <h3><strong>Chapter Summary</strong></h3>
-            <p className="mt-1">{summary}</p>
-          </div>
-          <div className="flex flex-col h-3/6 justify-between" id="chat">
-            <MessageList
-              referance={messageListReferance}
-              className="message-list font-sans overflow-y-scroll"
-              lockable={true}
-              toBottomHeight={"100%"}
-              dataSource={messages}
-            />
 
-            <Input
-              className="font-sans rounded mb-2"
-              referance={inputRef}
-              placeholder="Ask a question!"
-              multiline={true}
-              rightButtons={
-                <Button
-                  onClick={() => {
-                    handleClick(inputRef.current.value);
-                  }}
-                  color="white"
-                  backgroundColor="black"
-                  text="Send"
-                />
+          <div
+            className={
+              "mx-3 mt-5 rounded transition-all" +
+              (sidebarAccordion.semantic
+                ? " bg-white drop-shadow mb-5 opacity-100"
+                : " opacity-50")
+            }
+          >
+            <div
+              className="flex items-center  px-6 py-3 cursor-pointer"
+              onClick={() =>
+                setSideBarAccordion((prevState) => {
+                  return {
+                    ...prevState,
+                    ...{ semantic: !prevState.semantic },
+                  };
+                })
               }
-            />
+            >
+              <div className="select-none font-semibold text-xl sansserif flex-1">
+                Ask a question
+              </div>
+              <div
+                className={
+                  "border-b-2 border-r-2 h-3 w-3 border-gray-600" +
+                  (sidebarAccordion.semantic ? " -rotate-45" : " rotate-45")
+                }
+              ></div>
+            </div>
+
+            {sidebarAccordion.semantic && (
+              <div
+                className={
+                  "px-6 border-t-2 py-3 max-h-96 overflow-scroll" +
+                  (sidebarAccordion.semantic ? " bg-white" : "")
+                }
+              >
+                <div className="flex flex-col h-3/6 justify-between" id="chat">
+                  <MessageList
+                    referance={messageListReferance}
+                    className="message-list font-sans overflow-y-scroll"
+                    lockable={true}
+                    toBottomHeight={"100%"}
+                    dataSource={messages}
+                  />
+
+                  <Input
+                    className="font-sans rounded mb-2"
+                    referance={inputRef}
+                    placeholder="Ask a question!"
+                    multiline={true}
+                    rightButtons={
+                      <Button
+                        onClick={() => {
+                          handleClick(inputRef.current.value);
+                        }}
+                        color="white"
+                        backgroundColor="black"
+                        text="Send"
+                      />
+                    }
+                  />
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </div>
