@@ -1,5 +1,6 @@
 import "react-chat-elements/dist/main.css";
 import Chapter from "./pages/Chapter.js";
+import Landing from "./pages/Landing.js";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { useEffect } from "react";
 
@@ -22,7 +23,7 @@ const App = () => {
 	return (
 		<Router>
 			<Routes>
-				<Route exact path="/" element={<Chapter />} />
+				<Route exact path="/" element={<Landing />} />
 				<Route path="/chapter/:id" element={<Chapter />} />
 			</Routes>
 		</Router>

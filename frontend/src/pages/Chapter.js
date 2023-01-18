@@ -12,48 +12,6 @@ import {
   AccordionItemPanel,
 } from "react-accessible-accordion";
 
-const searchInBook = async (indexedContent) => {
-  //   const chapterIds = [1, 6, 5, 3, 7, 4, 10, 8, 2, 11, 12, 13, 14, 15, 9];
-  const chapterIds = Array.from({ length: 15 }, (_, i) => i + 1);
-  const options = { method: "GET" };
-  const chapters = [];
-  await Promise.all(
-    chapterIds.map(async (id) => {
-      const chapterContent = await fetch(
-        process.env.REACT_APP_API_ROOT + "/md-chapter/" + id,
-        options
-      );
-      const response = await chapterContent.json();
-      const chapter = response.sections.map((section) => {
-        var sectionContent = section.content
-          .replace(/\n\n/g, "\n")
-          .replace(/\n/g, " ");
-        if (
-          sectionContent.includes(indexedContent[0].substring(0, 20)) ||
-          sectionContent.includes(indexedContent[1].substring(0, 20))
-        ) {
-          chapters.push({ id: id, title: response.title });
-        }
-      });
-    })
-  );
-  return chapters;
-};
-
-const searchWithin = async (input) => {
-  const options = {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: `{"question":"${input}"}`,
-  };
-
-  const result = await fetch(
-    process.env.REACT_APP_API_ROOT + "/operand/search",
-    options
-  );
-  const response = await result.json();
-  return response;
-};
 
 function Chapter() {
   const { id } = useParams();
@@ -67,61 +25,73 @@ function Chapter() {
     redirect("/");
     redirect(pathToNavigate);
   };
-  const handleClick = async (input) => {
+  const handleKeypress = e => {
+    //it triggers by pressing the enter key
+  if (e.keyCode === 13) {
+    e.preventDefault();
+    handleSubmit(inputRef.current.value);
+    handleSubmit(e.target.value)
+  }
+};
+  const searchWithin = async (input) => {
+    setSearchLoading(true);
+    const options = {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: `{"question":"${input}"}`,
+    };
+
+    const result = await fetch(
+      process.env.REACT_APP_API_ROOT + "/operand/search",
+      options
+    );
+    const response = await result.json();
+    setSearchLoading(false);
+    return response;
+  };
+  const handleSubmit = async (input) => {
     const response = await searchWithin(input);
-    const chapters = await searchInBook(response[0]);
+    const firstChapter = await search(response[0][0].substring(0, 20)); //response 0 is a list 2 quotes from the question
+    const secondChapter = await search(response[0][1].substring(0, 20));
     let botText = "";
-    if (response[1] !== "") {
-      botText = (
-        <p>
-          {response[1]} You can read more in{" "}
-          <button
-            style={{ color: "blue" }}
-            onClick={() => {
-              setChapterId(chapters[0].id);
-              routeChange(`chapter/${chapters[0].id}`);
-            }}
-          >
-            Chapter {chapters[0].title}
-          </button>
-          or
-          <button
-            style={{ color: "blue" }}
-            onClick={() => {
-              setChapterId(chapters[1].id);
-              routeChange(`chapter/${chapters[1].id}`);
-            }}
-          >
-            Chapter {chapters[1].title}
-          </button>
-        </p>
-      );
-    } else {
-      botText = (
-        <p>
-          You can read more in{" "}
-          <button
-            style={{ color: "blue" }}
-            onClick={() => {
-              setChapterId(chapters[0].id);
-              routeChange(`chapter/${chapters[0].id}`);
-            }}
-          >
-            Chapter {chapters[0].title}
-          </button>{" "}
-          or{" "}
-          <button
-            style={{ color: "blue" }}
-            onClick={() => {
-              setChapterId(chapters[1].id);
-              routeChange(`chapter/${chapters[1].id}`);
-            }}
-          >
-            Chapter {chapters[1].title}
-          </button>
-        </p>
-      );
+    const firstChapterId = firstChapter.fuzzyResults[0].chapterId
+    const firstChapterTitle = firstChapter.fuzzyResults[0].chapterName
+    let secondChapterId = secondChapter.fuzzyResults[0].chapterId
+    let secondChapterTitle = secondChapter.fuzzyResults[0].chapterName
+    if (secondChapterTitle === firstChapterTitle) {
+      for (let i = 0; i < secondChapter.fuzzyResults.length; i++) {
+        if (secondChapter.fuzzyResults[i].chapterId !== firstChapterId) {
+          secondChapterId = secondChapter.fuzzyResults[i].chapterId
+          secondChapterTitle = secondChapter.fuzzyResults[i].chapterName
+          break;
+        }
+      }
     }
+    botText = (
+      <span>
+        {response[1] !== "" && response[1]}
+            <span> You can read more in</span>
+        <button
+          style={{ color: "blue" }}
+          onClick={() => {
+            setChapterId(firstChapterId);
+            routeChange(`chapter/${firstChapterId}`);
+          }}
+        >
+          <span>Chapter {firstChapterTitle}</span>
+        </button>
+        <span> or </span>
+        <button
+          style={{ color: "blue" }}
+          onClick={() => {
+            setChapterId(secondChapterId);
+            routeChange(`chapter/${secondChapterId}`);
+          }}
+        >
+          <span> Chapter {secondChapterTitle}</span>
+        </button>
+      </span>
+    )
 
     const userChatObj = {
       position: "right",
@@ -192,9 +162,9 @@ function Chapter() {
   }, [chapterId]);
 
   const [searchLoading, setSearchLoading] = useState(false);
-  const [searchQuery, setSearchQuery] = useState("");
+  // const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState(null);
-  async function search() {
+  async function search(searchQuery) {
     setSearchLoading(true);
     const chapterContent = await fetch(
       process.env.REACT_APP_API_ROOT + "/search",
@@ -211,6 +181,7 @@ function Chapter() {
     setSearchResults(response);
 
     setSearchLoading(false);
+    return response;
   }
 
   const [mouseOverTeaser, setMouseOverTeaser] = useState(false);
@@ -290,11 +261,10 @@ function Chapter() {
                 placeholder="Search for anything"
                 required
                 onKeyDown={(e) => {
-                  setSearchQuery(e.target.value);
                   if (!e.target.value) setSearchResults(null);
                   if (e.keyCode === 13) {
                     e.preventDefault();
-                    search();
+                    search(e.target.value);
                   }
                 }}
               />
@@ -411,6 +381,7 @@ function Chapter() {
         )}
       </div>
       <div id="columns" className="flex overflow-hidden h-screen">
+
         <div
           id="leftTease"
           className="w-30 h-full sansserif p-4 text-sm text-center flex flex-col opacity-50 hover:opacity-100 transition-opacity"
@@ -423,6 +394,9 @@ function Chapter() {
               "mt-auto text-gray-700 " + (!book ? "animate-pulse" : "")
             }
           >
+            <div className="animate-pulse">Hover for <br></br>Table of <br></br> Contents</div>
+            <br></br>
+            <div></div>
             {book?.cover ? (
               <img alt="" className="h-24 mx-auto mb-4" src={book?.cover} />
             ) : (
@@ -604,10 +578,12 @@ function Chapter() {
                     referance={inputRef}
                     placeholder="Ask a question!"
                     multiline={true}
+                    onKeyDown={handleKeypress}
                     rightButtons={
                       <Button
                         onClick={() => {
-                          handleClick(inputRef.current.value);
+                          handleSubmit(inputRef.current.value);
+
                         }}
                         color="white"
                         backgroundColor="black"
@@ -615,6 +591,30 @@ function Chapter() {
                       />
                     }
                   />
+                  {searchLoading && (
+                    <div id="loading-spinner" className="ml-auto">
+                      <div role="status">
+                        <svg
+                          aria-hidden="true"
+                          className="w-4 h-4 mr-2 text-gray-200 animate-spin dark:text-gray-600 fill-stone-500"
+                          viewBox="0 0 100 101"
+                          fill="none"
+                          xmlns="http://www.w3.org/2000/svg"
+                        >
+                          <path
+                            d="M100 50.5908C100 78.2051 77.6142 100.591 50 100.591C22.3858 100.591 0 78.2051 0 50.5908C0 22.9766 22.3858 0.59082 50 0.59082C77.6142 0.59082 100 22.9766 100 50.5908ZM9.08144 50.5908C9.08144 73.1895 27.4013 91.5094 50 91.5094C72.5987 91.5094 90.9186 73.1895 90.9186 50.5908C90.9186 27.9921 72.5987 9.67226 50 9.67226C27.4013 9.67226 9.08144 27.9921 9.08144 50.5908Z"
+                            fill="currentColor"
+                          />
+                          <path
+                            d="M93.9676 39.0409C96.393 38.4038 97.8624 35.9116 97.0079 33.5539C95.2932 28.8227 92.871 24.3692 89.8167 20.348C85.8452 15.1192 80.8826 10.7238 75.2124 7.41289C69.5422 4.10194 63.2754 1.94025 56.7698 1.05124C51.7666 0.367541 46.6976 0.446843 41.7345 1.27873C39.2613 1.69328 37.813 4.19778 38.4501 6.62326C39.0873 9.04874 41.5694 10.4717 44.0505 10.1071C47.8511 9.54855 51.7191 9.52689 55.5402 10.0491C60.8642 10.7766 65.9928 12.5457 70.6331 15.2552C75.2735 17.9648 79.3347 21.5619 82.5849 25.841C84.9175 28.9121 86.7997 32.2913 88.1811 35.8758C89.083 38.2158 91.5421 39.6781 93.9676 39.0409Z"
+                            fill="currentFill"
+                          />
+                        </svg>
+                        <span className="sr-only">Loading...</span>
+                      </div>
+                    </div>
+                  )}
+
                 </div>
               </div>
             )}
