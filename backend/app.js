@@ -241,7 +241,7 @@ app.get("/summary/:id", async (req, res) => {
 });
 
 app.post("/summarize-chapters", async (req, res) => {
-  const chapterIds = [7,1,5,3,8,4,6,9,2,11,13,14,12,16]
+  const chapterIds = [7,1,5,3,8,4,6,9,2,11,13,14,12,16, 10, 15]
   chapterIds.map(async (chapterId) => {
 
     const chapter = await prisma.chapter.findUnique({
