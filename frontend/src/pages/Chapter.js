@@ -441,6 +441,11 @@ function Chapter() {
           id="right"
           className="flex flex-col w-96 ml-auto bg-blue-100 h-full overflow-auto"
         >
+          <div className="mt-4 ml-4 select-none text-center font-semibold text-xl sansserif">
+            Don't like Zero to One?<br></br>
+            <a className= "text-blue-500" href = "https://aadillpickle.gumroad.com/l/booksbutgood"> Buy your own book (but good)</a> or <a className= "text-blue-500"href = "https://tally.so/r/3xVbkJ">suggest one!</a>
+          </div>
+
           <div
             className={
               "mx-3 mt-5 rounded transition-all" +
@@ -480,14 +485,14 @@ function Chapter() {
             )}
           </div>
 
-          <div
+          {/* <div
             className={
               "mx-3 mt-5 rounded transition-all" +
               (sidebarAccordion.flashcards
                 ? " bg-white drop-shadow mb-5 opacity-100"
                 : " opacity-50")
             }
-          >
+          > */}
             {/* <div
               className="flex items-center  px-6 py-3 cursor-pointer"
               onClick={() =>
@@ -508,7 +513,7 @@ function Chapter() {
                   (sidebarAccordion.flashcards ? " -rotate-45" : " rotate-45")
                 }
               ></div> }
-            </div> */}
+            </div>
 
             {/* {sidebarAccordion.flashcards && (
               <div
@@ -519,12 +524,12 @@ function Chapter() {
               >
                 <Question flashcard={true} />
               </div>
-            )} */}
-          </div>
+            )}
+          </div> */}
 
           <div
             className={
-              "mx-3 mt-5 rounded transition-all" +
+              "mx-3 rounded transition-all" +
               (sidebarAccordion.semantic
                 ? " bg-white drop-shadow mb-5 opacity-100"
                 : " opacity-50")
@@ -591,7 +596,7 @@ function Chapter() {
                       <div role="status">
                         <svg
                           aria-hidden="true"
-                          className="w-4 h-4 mr-2 text-gray-200 animate-spin dark:text-gray-600 fill-stone-500"
+                          className="w-4 h-4 mr-2 text-gray-200 animate-spin self-center text-center dark:text-gray-600 fill-stone-500"
                           viewBox="0 0 100 101"
                           fill="none"
                           xmlns="http://www.w3.org/2000/svg"
