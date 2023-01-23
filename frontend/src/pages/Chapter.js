@@ -1,8 +1,9 @@
 import "react-chat-elements/dist/main.css";
 import { MessageList, Input, Button } from "react-chat-elements";
 import React, { useRef, useState, useEffect } from "react";
-import { useParams, useNavigate, redirect, Link } from "react-router-dom";
+import { useParams, redirect, Link } from "react-router-dom";
 import Question from "../components/Question.js";
+import OrbitCard from "../components/OrbitCard.js";
 
 import {
   Accordion,
@@ -11,7 +12,6 @@ import {
   AccordionItemButton,
   AccordionItemPanel,
 } from "react-accessible-accordion";
-
 
 function Chapter() {
   const { id } = useParams();
@@ -340,7 +340,7 @@ function Chapter() {
                           <>{chapter.title}</>
                         )}
                       </div>
-                      {loadingChapter == chapter.id && (
+                      {loadingChapter === chapter.id && (
                         <div id="loading-spinner" className="ml-auto">
                           <div role="status">
                             <svg
@@ -430,8 +430,10 @@ function Chapter() {
                     __html: sect.content,
                   }}
                 />
-                <Question question={sect.question} answer={sect.answer} />
+                {/* <Question question={sect.question} answer={sect.answer} /> */}
+                <OrbitCard question={sect.question} answer={sect.answer}/>
               </>
+
             ))}
           </article>
         </div>
@@ -486,7 +488,7 @@ function Chapter() {
                 : " opacity-50")
             }
           >
-            <div
+            {/* <div
               className="flex items-center  px-6 py-3 cursor-pointer"
               onClick={() =>
                 setSideBarAccordion((prevState) => {
@@ -497,18 +499,18 @@ function Chapter() {
                 })
               }
             >
-              <div className="select-none font-semibold text-xl sansserif flex-1">
+              {/* <div className="select-none font-semibold text-xl sansserif flex-1">
                 Flashcards
-              </div>
-              <div
+              </div>}
+              {<div
                 className={
                   "border-b-2 border-r-2 h-3 w-3 border-gray-600" +
                   (sidebarAccordion.flashcards ? " -rotate-45" : " rotate-45")
                 }
-              ></div>
-            </div>
+              ></div> }
+            </div> */}
 
-            {sidebarAccordion.flashcards && (
+            {/* {sidebarAccordion.flashcards && (
               <div
                 className={
                   "px-6 border-t-2 py-3 max-h-96 overflow-scroll" +
@@ -517,15 +519,8 @@ function Chapter() {
               >
                 <Question flashcard={true} />
               </div>
-            )}
+            )} */}
           </div>
-
-          {/* <div className="h-1/6" id="progress">
-          quiz progress
-          </div>
-          <div className="h-2/6" id="question">
-          quiz question
-          </div> */}
 
           <div
             className={
