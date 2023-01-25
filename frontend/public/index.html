@@ -35,7 +35,8 @@
     <!-- Google tag (gtag.js) -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-BFGZ10KN5V"></script>
     <script>
-      if (document.location.hostname === "booksbutgood.com") {
+      console.log(document.location.hostname)
+      if (document.location.hostname === "booksbutgood") {
         window.dataLayer = window.dataLayer || [];
         function gtag(){dataLayer.push(arguments);}
         gtag('js', new Date());
