@@ -42,7 +42,7 @@ function Chapter() {
     };
 
     const result = await fetch(
-      process.env.REACT_APP_API_ROOT + "/operand/search",
+      process.env.REACT_APP_API_ROOT + "/new/search",
       options
     );
     const response = await result.json();
@@ -50,48 +50,51 @@ function Chapter() {
     return response;
   };
   const handleSubmit = async (input) => {
+
     const response = await searchWithin(input);
-    const firstChapter = await search(response[0][0].substring(0, 20)); //response 0 is a list 2 quotes from the question
-    const secondChapter = await search(response[0][1].substring(0, 20));
-    let botText = "";
-    const firstChapterId = firstChapter.fuzzyResults[0].chapterId
-    const firstChapterTitle = firstChapter.fuzzyResults[0].chapterName
-    let secondChapterId = secondChapter.fuzzyResults[0].chapterId
-    let secondChapterTitle = secondChapter.fuzzyResults[0].chapterName
-    if (secondChapterTitle === firstChapterTitle) {
-      for (let i = 0; i < secondChapter.fuzzyResults.length; i++) {
-        if (secondChapter.fuzzyResults[i].chapterId !== firstChapterId) {
-          secondChapterId = secondChapter.fuzzyResults[i].chapterId
-          secondChapterTitle = secondChapter.fuzzyResults[i].chapterName
-          break;
-        }
-      }
-    }
-    botText = (
-      <span>
-        {response[1] !== "" && response[1]}
-            <span> You can read more in</span>
-        <button
-          style={{ color: "blue" }}
-          onClick={() => {
-            setChapterId(firstChapterId);
-            routeChange(`chapter/${firstChapterId}`);
-          }}
-        >
-          <span>Chapter {firstChapterTitle}</span>
-        </button>
-        <span> or </span>
-        <button
-          style={{ color: "blue" }}
-          onClick={() => {
-            setChapterId(secondChapterId);
-            routeChange(`chapter/${secondChapterId}`);
-          }}
-        >
-          <span> Chapter {secondChapterTitle}</span>
-        </button>
-      </span>
-    )
+    const botText = response.output.text;
+
+    // const firstChapter = await search(response[0][0].substring(0, 20)); //response 0 is a list 2 quotes from the question
+    // const secondChapter = await search(response[0][1].substring(0, 20));
+    // let botText = "";
+    // const firstChapterId = firstChapter.fuzzyResults[0].chapterId
+    // const firstChapterTitle = firstChapter.fuzzyResults[0].chapterName
+    // let secondChapterId = secondChapter.fuzzyResults[0].chapterId
+    // let secondChapterTitle = secondChapter.fuzzyResults[0].chapterName
+    // if (secondChapterTitle === firstChapterTitle) {
+    //   for (let i = 0; i < secondChapter.fuzzyResults.length; i++) {
+    //     if (secondChapter.fuzzyResults[i].chapterId !== firstChapterId) {
+    //       secondChapterId = secondChapter.fuzzyResults[i].chapterId
+    //       secondChapterTitle = secondChapter.fuzzyResults[i].chapterName
+    //       break;
+    //     }
+    //   }
+    // }
+    // botText = (
+    //   <span>
+    //     {response[1] !== "" && response[1]}
+    //         <span> You can read more in</span>
+    //     <button
+    //       style={{ color: "blue" }}
+    //       onClick={() => {
+    //         setChapterId(firstChapterId);
+    //         routeChange(`chapter/${firstChapterId}`);
+    //       }}
+    //     >
+    //       <span>Chapter {firstChapterTitle}</span>
+    //     </button>
+    //     <span> or </span>
+    //     <button
+    //       style={{ color: "blue" }}
+    //       onClick={() => {
+    //         setChapterId(secondChapterId);
+    //         routeChange(`chapter/${secondChapterId}`);
+    //       }}
+    //     >
+    //       <span> Chapter {secondChapterTitle}</span>
+    //     </button>
+    //   </span>
+    // )
 
     const userChatObj = {
       position: "right",
@@ -547,7 +550,7 @@ function Chapter() {
               }
             >
               <div className="select-none font-semibold text-xl sansserif flex-1">
-                Ask a question
+                Ask the Author
               </div>
               <div
                 className={
@@ -583,10 +586,10 @@ function Chapter() {
                       <Button
                         onClick={() => {
                           handleSubmit(inputRef.current.value);
-
                         }}
+                        disabled={searchLoading}
                         color="white"
-                        backgroundColor="black"
+                        backgroundColor = {searchLoading ? 'grey' : 'black'}
                         text="Send"
                       />
                     }

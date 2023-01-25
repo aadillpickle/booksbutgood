@@ -117,6 +117,24 @@ app.post("/search", jsonParser, async (req, res) => {
   });
 });
 
+
+app.post("/new/search", jsonParser, async (req, res) => {
+  async function answer(question) {
+    const options = {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: `{"userInput":"${question}"}`
+    };
+
+    const resp = await fetch('https://www.konjer.xyz/api/zero', options)
+    const body = await resp.json();
+    return body;
+  }
+    const question = req.body.question;
+    let result = await answer(question);
+    res.send(result);
+});
+
 app.post("/operand/search", jsonParser, async (req, res) => {
   async function searchWithin(question) {
     const options = {
@@ -300,6 +318,7 @@ app.post("/questions-for-all-sections", async (req, res) => {
       },
     });
     console.log(sectionUpdate)
+    console.log(i)
   }
 
   return res.status(200);

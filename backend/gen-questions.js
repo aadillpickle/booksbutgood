@@ -13,8 +13,8 @@ const flashcardForSectionSummary = async (sectionSummary) => {
 	const response = await openai.createCompletion({
 		model: "text-davinci-003",
 		prompt: getSectionQuestionsPrompt + sectionSummary.trim() + "Question:",
-		temperature: 0.8,
-		max_tokens: 255,
+		temperature: 0.75,
+		max_tokens: 125,
 		top_p: 1,
 		frequency_penalty: 0,
 		presence_penalty: 0,
