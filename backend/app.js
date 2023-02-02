@@ -4,27 +4,27 @@ let showdown = require("showdown");
 let markdownConverter = new showdown.Converter();
 const { fuzzy, search, Searcher } = require("fast-fuzzy");
 const removeMd = require("remove-markdown");
-
 const { summarize, genQuestionFromSummary, flashcardForSection } = require("./gen-questions.js");
-
 const fetch = require("node-fetch");
 
 const express = require("express");
 const bodyParser = require("body-parser");
+const { initBook } = require("./epub-parser.js");
 
 const app = express();
 const port = 3000;
-
 const jsonParser = bodyParser.json();
-
 // make searchable index
+const bookId=1;
 let fuzzyIndex;
 
 makeFuzzyIndex();
+// initBook();
+
 async function makeFuzzyIndex() {
   let bookChapters = await prisma.chapter.findMany({
     where: {
-      bookId: 1,
+      bookId: bookId,
     },
     select: {
       id: true,
@@ -199,11 +199,11 @@ app.get("/book/:id", async (req, res) => {
   return res.status(200).json(book);
 });
 
-app.get("/chapter/:id", async (req, res) => {
+app.post("/chapter/:id", async (req, res) => {
   if (!req.params.id || !Number(req.params.id)) {
     return res.status(400).send("invalid id");
   }
-
+  console.log("hi")
   const chapter = await prisma.chapter.findUnique({
     where: {
       id: Number(req.params.id),
@@ -212,7 +212,7 @@ app.get("/chapter/:id", async (req, res) => {
       sections: true,
     },
   });
-
+  console.log(chapter)
   if (chapter) {
     chapter.sections.sort((a, b) => a.order - b.order);
     chapter.sections = chapter.sections.map((section) => {
@@ -324,6 +324,9 @@ app.post("/questions-for-all-sections", async (req, res) => {
   return res.status(200);
 });
 
+app.post("/init-book", async (req, res) => {
+  const book = req.body.bookFile;
+});
 app.listen(process.env.PORT || 3001, () => {
   console.log(`Example app listening on port ${process.env.PORT || 3001}`);
 });
